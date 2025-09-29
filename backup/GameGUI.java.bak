@@ -1,0 +1,1006 @@
+package com.uno.gui;package com.uno.gui;
+
+
+
+import com.uno.client.UnoClientMain;import com.uno.client.UnoClientMain;
+
+import com.uno.model.Card;import com.uno.model.Card;
+
+import com.uno.model.CardColor;import com.uno.model.CardColor;
+
+import com.uno.model.CardType;import com.uno.model.CardType;
+
+import com.uno.server.GameRoom.GameState;import com.uno.server.GameRoom.GameState;
+
+import com.uno.server.GameRoom.PlayerInfo;import com.uno.server.GameRoom.PlayerInfo;
+
+
+
+import javax.swing.*;import javax.swing.*;
+
+import java.awt.*;import java.awt.*;
+
+import java.awt.event.WindowAdapter;import java.awt.event.WindowAdapter;
+
+import java.awt.event.WindowEvent;import java    /**
+
+import java.util.ArrayList;     * Cập nhật bài của người chơi
+
+import java.util.List;     * 
+
+import java.util.Map;     * @param isCurrentPlayer Có phải lượt của người chơi hiện tại không
+
+     */
+
+/**    private void updatePlayerHand(boolean isCurrentPlayer) {
+
+ * Giao diện game Uno        playerHandPanel.removeAll();
+
+ */        
+
+public class GameGUI extends JFrame {        System.out.println("updatePlayerHand: isCurrentPlayer = " + isCurrentPlayer + ", canPlay = " + canPlay);
+
+    private final UnoClientMain clientMain;        
+
+    private final String playerId;        for (int i = 0; i < playerHand.size(); i++) {
+
+                Card card = playerHand.get(i);
+
+    private JPanel gamePanel;            JButton cardButton = createCardButton(card, i);
+
+    private JPanel topCardPanel;            
+
+    private JPanel playerHandPanel;            final int cardIndex = i;
+
+    private List<JPanel> otherPlayerPanels;            cardButton.addActionListener(e -> {
+
+    private JLabel topCardLabel;                System.out.println("Card clicked, canPlay = " + canPlay);
+
+    private JLabel currentPlayerLabel;                if (canPlay) {owEvent;
+
+    private JLabel directionLabel;import java.util.ArrayList;
+
+    private JButton drawCardButton;import java.util.List;
+
+    private JButton endTurnButton;import java.util.Map;
+
+    private JButton unoButton;
+
+    private JTextArea chatArea;/**
+
+    private JTextField chatField; * Class đại diện cho giao diện chơi game
+
+    private JButton sendButton; */
+
+    public class GameGUI extends JFrame {
+
+    private boolean canPlay;    private static final long serialVersionUID = 1L;
+
+    private Card topCard;    
+
+    private List<Card> playerHand;    private final UnoClientMain clientMain;
+
+        private final String playerId;
+
+    public GameGUI(UnoClientMain clientMain, String playerId) {    
+
+        this.clientMain = clientMain;    private JPanel gamePanel;
+
+        this.playerId = playerId;    private JPanel topCardPanel;
+
+        this.canPlay = false;    private JPanel playerHandPanel;
+
+        this.playerHand = new ArrayList<>();    private List<JPanel> otherPlayerPanels;
+
+            private JLabel topCardLabel;
+
+        initComponents();    private JLabel currentPlayerLabel;
+
+        setupListeners();    private JLabel directionLabel;
+
+            private JButton drawCardButton;
+
+        setTitle("Uno Online - Game");    private JButton endTurnButton;
+
+        setSize(1000, 700);    private JButton unoButton;
+
+        setLocationRelativeTo(null);    private JTextArea chatArea;
+
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);    private JTextField chatField;
+
+            private JButton sendButton;
+
+        // Khi đóng cửa sổ, đảm bảo thông báo cho server    
+
+        addWindowListener(new WindowAdapter() {    private boolean canPlay;
+
+            @Override    private Card topCard;
+
+            public void windowClosing(WindowEvent e) {    private List<Card> playerHand;
+
+                int option = JOptionPane.showConfirmDialog(    
+
+                    GameGUI.this,    public GameGUI(UnoClientMain clientMain, String playerId) {
+
+                    "Bạn có chắc chắn muốn thoát khỏi game?",        this.clientMain = clientMain;
+
+                    "Xác nhận thoát",        this.playerId = playerId;
+
+                    JOptionPane.YES_NO_OPTION        this.canPlay = false;
+
+                );        this.playerHand = new ArrayList<>();
+
+                        
+
+                if (option == JOptionPane.YES_OPTION) {        initComponents();
+
+                    clientMain.leaveRoom();        setupListeners();
+
+                    clientMain.showLobby();        
+
+                    dispose();        setTitle("Uno Online - Game");
+
+                }        setSize(1000, 700);
+
+            }        setLocationRelativeTo(null);
+
+        });        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+    }    }
+
+        
+
+    /**    /**
+
+     * Khởi tạo các thành phần UI     * Khởi tạo các thành phần giao diện
+
+     */     */
+
+    private void initComponents() {    private void initComponents() {
+
+        setLayout(new BorderLayout());        // Panel chính với BorderLayout
+
+                JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+
+        // Panel chính        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        gamePanel = new JPanel(new BorderLayout());        
+
+                // Panel game
+
+        // Panel chứa thông tin game ở phía trên        gamePanel = new JPanel(new BorderLayout(10, 10));
+
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));        
+
+        currentPlayerLabel = new JLabel("Lượt của: ");        // Panel chứa thông tin trạng thái game
+
+        directionLabel = new JLabel("Chiều chơi: ↻");        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+
+        infoPanel.add(currentPlayerLabel);        currentPlayerLabel = new JLabel("Lượt của: ");
+
+        infoPanel.add(directionLabel);        directionLabel = new JLabel("Chiều chơi: ↻");
+
+                
+
+        // Panel chứa lá bài trên cùng ở giữa        infoPanel.add(currentPlayerLabel);
+
+        topCardPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));        infoPanel.add(directionLabel);
+
+        topCardLabel = new JLabel("Chưa có lá bài");        
+
+        topCardLabel.setPreferredSize(new Dimension(100, 150));        gamePanel.add(infoPanel, BorderLayout.NORTH);
+
+        topCardLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));        
+
+        topCardLabel.setOpaque(true);        // Panel chứa các người chơi khác
+
+        topCardLabel.setHorizontalAlignment(SwingConstants.CENTER);        JPanel playersPanel = new JPanel(new GridLayout(1, 3, 10, 0));
+
+        topCardLabel.setVerticalAlignment(SwingConstants.CENTER);        playersPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        topCardPanel.add(topCardLabel);        
+
+                otherPlayerPanels = new ArrayList<>();
+
+        // Panel chứa các người chơi khác        for (int i = 0; i < 3; i++) {
+
+        JPanel otherPlayersPanel = new JPanel(new GridLayout(1, 3, 10, 0));            JPanel playerPanel = new JPanel();
+
+        otherPlayersPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));            playerPanel.setBorder(BorderFactory.createTitledBorder("Người chơi"));
+
+                    playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
+
+        otherPlayerPanels = new ArrayList<>();            
+
+        for (int i = 0; i < 3; i++) {            JLabel nameLabel = new JLabel("Tên: ");
+
+            JPanel playerPanel = new JPanel(new GridLayout(3, 1));            JLabel cardCountLabel = new JLabel("Số lá bài: 0");
+
+            playerPanel.setBorder(BorderFactory.createTitledBorder("Người chơi " + (i + 1)));            JLabel unoLabel = new JLabel("UNO: Không");
+
+                        
+
+            JLabel nameLabel = new JLabel("Tên: ");            playerPanel.add(nameLabel);
+
+            JLabel cardCountLabel = new JLabel("Số lá bài: 0");            playerPanel.add(cardCountLabel);
+
+            JLabel unoLabel = new JLabel("UNO: Không");            playerPanel.add(unoLabel);
+
+                        
+
+            playerPanel.add(nameLabel);            otherPlayerPanels.add(playerPanel);
+
+            playerPanel.add(cardCountLabel);            playersPanel.add(playerPanel);
+
+            playerPanel.add(unoLabel);        }
+
+                    
+
+            otherPlayersPanel.add(playerPanel);        gamePanel.add(playersPanel, BorderLayout.CENTER);
+
+            otherPlayerPanels.add(playerPanel);        
+
+        }        // Panel chứa lá bài trên cùng
+
+                topCardPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+        // Panel chứa lá bài của người chơi ở dưới        topCardPanel.setBorder(BorderFactory.createTitledBorder("Lá bài trên cùng"));
+
+        JPanel playerPanel = new JPanel(new BorderLayout());        
+
+        playerPanel.setBorder(BorderFactory.createTitledBorder("Bài của bạn"));        topCardLabel = new JLabel("Chưa có lá bài");
+
+                topCardLabel.setFont(new Font("Arial", Font.BOLD, 16));
+
+        playerHandPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));        topCardLabel.setPreferredSize(new Dimension(120, 180));
+
+        playerHandPanel.setPreferredSize(new Dimension(800, 150));        topCardLabel.setHorizontalAlignment(JLabel.CENTER);
+
+                topCardLabel.setVerticalAlignment(JLabel.CENTER);
+
+        JScrollPane handScrollPane = new JScrollPane(playerHandPanel);        topCardLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+
+        handScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);        
+
+        handScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);        topCardPanel.add(topCardLabel);
+
+        handScrollPane.setPreferredSize(new Dimension(800, 150));        
+
+                gamePanel.add(topCardPanel, BorderLayout.EAST);
+
+        // Panel chứa các nút hành động        
+
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));        // Panel chứa bài của người chơi
+
+        drawCardButton = new JButton("Rút bài");        JPanel playerPanel = new JPanel(new BorderLayout(5, 5));
+
+        endTurnButton = new JButton("Kết thúc lượt");        playerPanel.setBorder(BorderFactory.createTitledBorder("Bài của bạn"));
+
+        unoButton = new JButton("UNO!");        
+
+                playerHandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
+        actionPanel.add(drawCardButton);        playerHandPanel.setPreferredSize(new Dimension(700, 200));
+
+        actionPanel.add(endTurnButton);        
+
+        actionPanel.add(unoButton);        JScrollPane handScrollPane = new JScrollPane(playerHandPanel);
+
+                handScrollPane.setPreferredSize(new Dimension(700, 200));
+
+        playerPanel.add(handScrollPane, BorderLayout.CENTER);        handScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        playerPanel.add(actionPanel, BorderLayout.SOUTH);        handScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+                
+
+        // Panel chat ở bên phải        playerPanel.add(handScrollPane, BorderLayout.CENTER);
+
+        JPanel chatPanel = new JPanel(new BorderLayout());        
+
+        chatPanel.setBorder(BorderFactory.createTitledBorder("Chat"));        // Panel chứa các button hành động
+
+        chatPanel.setPreferredSize(new Dimension(200, 600));        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+                drawCardButton = new JButton("Rút bài");
+
+        chatArea = new JTextArea();        endTurnButton = new JButton("Kết thúc lượt");
+
+        chatArea.setEditable(false);        unoButton = new JButton("UNO!");
+
+        JScrollPane chatScrollPane = new JScrollPane(chatArea);        
+
+                actionPanel.add(drawCardButton);
+
+        JPanel chatInputPanel = new JPanel(new BorderLayout());        actionPanel.add(endTurnButton);
+
+        chatField = new JTextField();        actionPanel.add(unoButton);
+
+        sendButton = new JButton("Gửi");        
+
+                playerPanel.add(actionPanel, BorderLayout.SOUTH);
+
+        chatInputPanel.add(chatField, BorderLayout.CENTER);        
+
+        chatInputPanel.add(sendButton, BorderLayout.EAST);        gamePanel.add(playerPanel, BorderLayout.SOUTH);
+
+                
+
+        chatPanel.add(chatScrollPane, BorderLayout.CENTER);        // Panel chat
+
+        chatPanel.add(chatInputPanel, BorderLayout.SOUTH);        JPanel chatPanel = new JPanel(new BorderLayout(5, 5));
+
+                chatPanel.setBorder(BorderFactory.createTitledBorder("Chat"));
+
+        // Thêm các panel vào panel chính        
+
+        gamePanel.add(infoPanel, BorderLayout.NORTH);        chatArea = new JTextArea();
+
+        gamePanel.add(topCardPanel, BorderLayout.CENTER);        chatArea.setEditable(false);
+
+        gamePanel.add(otherPlayersPanel, BorderLayout.WEST);        chatArea.setLineWrap(true);
+
+        gamePanel.add(playerPanel, BorderLayout.SOUTH);        chatArea.setWrapStyleWord(true);
+
+                JScrollPane chatScrollPane = new JScrollPane(chatArea);
+
+        add(gamePanel, BorderLayout.CENTER);        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
+
+        add(chatPanel, BorderLayout.EAST);        
+
+                JPanel chatInputPanel = new JPanel(new BorderLayout(5, 0));
+
+        // Vô hiệu hóa các nút ban đầu        chatField = new JTextField();
+
+        drawCardButton.setEnabled(false);        sendButton = new JButton("Gửi");
+
+        endTurnButton.setEnabled(false);        chatInputPanel.add(chatField, BorderLayout.CENTER);
+
+        unoButton.setEnabled(false);        chatInputPanel.add(sendButton, BorderLayout.EAST);
+
+                
+
+        // Thiết lập trạng thái ban đầu        chatPanel.add(chatInputPanel, BorderLayout.SOUTH);
+
+        canPlay = false;        
+
+    }        // Thêm các panel vào panel chính
+
+            mainPanel.add(gamePanel, BorderLayout.CENTER);
+
+    /**        mainPanel.add(chatPanel, BorderLayout.EAST);
+
+     * Thiết lập các listener        chatPanel.setPreferredSize(new Dimension(250, 700));
+
+     */        
+
+    private void setupListeners() {        // Thêm panel chính vào frame
+
+        drawCardButton.addActionListener(e -> {        add(mainPanel);
+
+            if (canPlay) {        
+
+                clientMain.drawCard();        // Vô hiệu hóa các button ban đầu
+
+                drawCardButton.setEnabled(false);        drawCardButton.setEnabled(false);
+
+                endTurnButton.setEnabled(true);        endTurnButton.setEnabled(false);
+
+                canPlay = false;        unoButton.setEnabled(false);
+
+            }    }
+
+        });    
+
+            /**
+
+        endTurnButton.addActionListener(e -> {     * Thiết lập các listener cho các thành phần
+
+            clientMain.endTurn();     */
+
+            endTurnButton.setEnabled(false);    private void setupListeners() {
+
+            canPlay = false;        // Listener cho button rút bài
+
+        });        drawCardButton.addActionListener(e -> {
+
+                    clientMain.drawCard();
+
+        unoButton.addActionListener(e -> {            drawCardButton.setEnabled(false);
+
+            clientMain.callUno();        });
+
+        });        
+
+                // Listener cho button kết thúc lượt
+
+        sendButton.addActionListener(e -> {        endTurnButton.addActionListener(e -> {
+
+            String message = chatField.getText().trim();            clientMain.endTurn();
+
+            if (!message.isEmpty()) {            canPlay = false;
+
+                clientMain.sendChatMessage(message);            drawCardButton.setEnabled(false);
+
+                chatField.setText("");            endTurnButton.setEnabled(false);
+
+            }        });
+
+        });        
+
+                // Listener cho button UNO
+
+        chatField.addActionListener(e -> {        unoButton.addActionListener(e -> {
+
+            String message = chatField.getText().trim();            clientMain.callUno();
+
+            if (!message.isEmpty()) {        });
+
+                clientMain.sendChatMessage(message);        
+
+                chatField.setText("");        // Listener cho button gửi chat
+
+            }        sendButton.addActionListener(e -> {
+
+        });            String message = chatField.getText().trim();
+
+    }            if (!message.isEmpty()) {
+
+                    clientMain.sendChatMessage(message);
+
+    /**                chatField.setText("");
+
+     * Cập nhật trạng thái game            }
+
+     *         });
+
+     * @param gameState Trạng thái game        
+
+     */        // Listener cho nhập chat và nhấn Enter
+
+    public void updateGameState(GameState gameState) {        chatField.addActionListener(e -> {
+
+        // Cập nhật lá bài trên cùng            String message = chatField.getText().trim();
+
+        topCard = gameState.getTopCard();            if (!message.isEmpty()) {
+
+        updateTopCard();                clientMain.sendChatMessage(message);
+
+                        chatField.setText("");
+
+        // Cập nhật thông tin người chơi hiện tại            }
+
+        String currentPlayerId = gameState.getCurrentPlayerId();        });
+
+        Map<String, PlayerInfo> playerInfos = gameState.getPlayerInfos();        
+
+        PlayerInfo currentPlayerInfo = playerInfos.get(currentPlayerId);        // Listener cho window close
+
+                addWindowListener(new WindowAdapter() {
+
+        if (currentPlayerInfo != null) {            @Override
+
+            currentPlayerLabel.setText("Lượt của: " + currentPlayerInfo.getName());            public void windowClosing(WindowEvent e) {
+
+        }                int confirm = JOptionPane.showConfirmDialog(GameGUI.this, 
+
+                            "Bạn có chắc muốn thoát khỏi game? Bạn sẽ bị xem như đã thua.", 
+
+        // Cập nhật chiều chơi                    "Xác nhận thoát", JOptionPane.YES_NO_OPTION);
+
+        directionLabel.setText("Chiều chơi: " + (gameState.isClockwise() ? "↻" : "↺"));                
+
+                        if (confirm == JOptionPane.YES_OPTION) {
+
+        // Kiểm tra xem có phải lượt của người chơi hiện tại không                    clientMain.leaveRoom();
+
+        boolean isCurrentPlayer = currentPlayerId != null && currentPlayerId.equals(playerId);                    dispose();
+
+        System.out.println("updateGameState: currentPlayerId = " + currentPlayerId + ", playerId = " + playerId + ", isCurrentPlayer = " + isCurrentPlayer);                }
+
+                    }
+
+        // Cập nhật bài của người chơi        });
+
+        PlayerInfo playerInfo = playerInfos.get(playerId);    }
+
+        if (playerInfo != null && playerInfo.getHand() != null) {    
+
+            playerHand = playerInfo.getHand();    /**
+
+            updatePlayerHand(isCurrentPlayer);     * Cập nhật trạng thái game
+
+        }     * 
+
+             * @param gameState Trạng thái game
+
+        // Cập nhật trạng thái các button     */
+
+        canPlay = isCurrentPlayer;    public void updateGameState(GameState gameState) {
+
+        drawCardButton.setEnabled(isCurrentPlayer);        // Cập nhật lá bài trên cùng
+
+        endTurnButton.setEnabled(false); // Chỉ bật sau khi rút bài        topCard = gameState.getTopCard();
+
+        unoButton.setEnabled(playerHand.size() == 2); // Chỉ bật khi còn 2 lá bài        updateTopCard();
+
+                
+
+        // Cập nhật thông tin người chơi khác        // Cập nhật thông tin người chơi hiện tại
+
+        List<PlayerInfo> otherPlayers = new ArrayList<>();        String currentPlayerId = gameState.getCurrentPlayerId();
+
+        for (String pid : playerInfos.keySet()) {        Map<String, PlayerInfo> playerInfos = gameState.getPlayerInfos();
+
+            if (!pid.equals(playerId)) {        PlayerInfo currentPlayerInfo = playerInfos.get(currentPlayerId);
+
+                otherPlayers.add(playerInfos.get(pid));        
+
+            }        if (currentPlayerInfo != null) {
+
+        }            currentPlayerLabel.setText("Lượt của: " + currentPlayerInfo.getName());
+
+                }
+
+        // Cập nhật giao diện người chơi khác        
+
+        for (int i = 0; i < otherPlayerPanels.size(); i++) {        // Cập nhật chiều chơi
+
+            JPanel panel = otherPlayerPanels.get(i);        directionLabel.setText("Chiều chơi: " + (gameState.isClockwise() ? "↻" : "↺"));
+
+            if (i < otherPlayers.size()) {        
+
+                PlayerInfo otherPlayer = otherPlayers.get(i);        // Kiểm tra xem có phải lượt của người chơi hiện tại không
+
+                panel.setBorder(BorderFactory.createTitledBorder(        boolean isCurrentPlayer = currentPlayerId != null && currentPlayerId.equals(playerId);
+
+                    currentPlayerId != null && currentPlayerId.equals(otherPlayer.getId()) ?         
+
+                    "* " + otherPlayer.getName() + " *" : otherPlayer.getName()));        // Cập nhật bài của người chơi
+
+                        PlayerInfo playerInfo = playerInfos.get(playerId);
+
+                // Cập nhật thông tin        if (playerInfo != null && playerInfo.getHand() != null) {
+
+                JLabel nameLabel = (JLabel) panel.getComponent(0);            playerHand = playerInfo.getHand();
+
+                JLabel cardCountLabel = (JLabel) panel.getComponent(1);            updatePlayerHand(isCurrentPlayer);
+
+                JLabel unoLabel = (JLabel) panel.getComponent(2);        }
+
+                        
+
+                nameLabel.setText("Tên: " + otherPlayer.getName());        // Cập nhật trạng thái các button
+
+                cardCountLabel.setText("Số lá bài: " + otherPlayer.getHandSize());        canPlay = isCurrentPlayer;
+
+                unoLabel.setText("UNO: " + (otherPlayer.hasCalledUno() ? "Có" : "Không"));        drawCardButton.setEnabled(isCurrentPlayer);
+
+                        endTurnButton.setEnabled(false); // Chỉ bật sau khi rút bài
+
+                panel.setVisible(true);        unoButton.setEnabled(playerHand.size() == 2); // Chỉ bật khi còn 2 lá bài
+
+            } else {        
+
+                panel.setVisible(false);        // Cập nhật thông tin người chơi khác
+
+            }        List<PlayerInfo> otherPlayers = new ArrayList<>();
+
+        }        for (String pid : playerInfos.keySet()) {
+
+                    if (!pid.equals(playerId)) {
+
+        // Nếu game kết thúc, hiển thị thông báo                otherPlayers.add(playerInfos.get(pid));
+
+        if (gameState.isGameOver()) {            }
+
+            String winnerId = gameState.getWinnerId();        }
+
+            String winnerName = playerInfos.get(winnerId).getName();        
+
+            JOptionPane.showMessageDialog(this, "Người chơi " + winnerName + " đã chiến thắng!", "Game kết thúc", JOptionPane.INFORMATION_MESSAGE);        // Cập nhật giao diện người chơi khác
+
+        }        for (int i = 0; i < otherPlayerPanels.size(); i++) {
+
+    }            JPanel panel = otherPlayerPanels.get(i);
+
+                if (i < otherPlayers.size()) {
+
+    /**                PlayerInfo otherPlayer = otherPlayers.get(i);
+
+     * Cập nhật bài của người chơi                panel.setBorder(BorderFactory.createTitledBorder(
+
+     *                     currentPlayerId != null && currentPlayerId.equals(otherPlayer.getId()) ? 
+
+     * @param isCurrentPlayer Có phải lượt của người chơi hiện tại không                    "* " + otherPlayer.getName() + " *" : otherPlayer.getName()));
+
+     */                
+
+    private void updatePlayerHand(boolean isCurrentPlayer) {                // Cập nhật thông tin
+
+        playerHandPanel.removeAll();                JLabel nameLabel = (JLabel) panel.getComponent(0);
+
+                        JLabel cardCountLabel = (JLabel) panel.getComponent(1);
+
+        System.out.println("updatePlayerHand: isCurrentPlayer = " + isCurrentPlayer + ", canPlay = " + canPlay);                JLabel unoLabel = (JLabel) panel.getComponent(2);
+
+                        
+
+        for (int i = 0; i < playerHand.size(); i++) {                nameLabel.setText("Tên: " + otherPlayer.getName());
+
+            Card card = playerHand.get(i);                cardCountLabel.setText("Số lá bài: " + otherPlayer.getHandSize());
+
+            JButton cardButton = createCardButton(card, i);                unoLabel.setText("UNO: " + (otherPlayer.hasCalledUno() ? "Có" : "Không"));
+
+                            
+
+            final int cardIndex = i;                panel.setVisible(true);
+
+            cardButton.addActionListener(e -> {            } else {
+
+                System.out.println("Card clicked, canPlay = " + canPlay);                panel.setVisible(false);
+
+                if (canPlay) {            }
+
+                    // Kiểm tra xem lá bài có thể đánh được không        }
+
+                    if (card.canPlayOn(topCard)) {    }
+
+                        // Nếu là lá wild, hiển thị dialog chọn màu    
+
+                        if (card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR) {    /**
+
+                            CardColor selectedColor = showColorSelectionDialog();     * Cập nhật hiển thị lá bài trên cùng
+
+                            if (selectedColor != null) {     */
+
+                                clientMain.playCard(cardIndex, selectedColor);    private void updateTopCard() {
+
+                                canPlay = false;        if (topCard != null) {
+
+                                drawCardButton.setEnabled(false);            Color cardColor = getColorForCard(topCard.getColor());
+
+                                endTurnButton.setEnabled(false);            
+
+                            }            topCardLabel.setOpaque(true);
+
+                        } else {            topCardLabel.setBackground(cardColor);
+
+                            clientMain.playCard(cardIndex, card.getColor());            topCardLabel.setForeground(cardColor == Color.BLACK ? Color.WHITE : Color.BLACK);
+
+                            canPlay = false;            
+
+                            drawCardButton.setEnabled(false);            String cardText;
+
+                            endTurnButton.setEnabled(false);            if (topCard.getType() == CardType.NUMBER) {
+
+                        }                cardText = String.valueOf(topCard.getValue());
+
+                    } else {            } else {
+
+                        JOptionPane.showMessageDialog(this, "Bạn không thể đánh lá bài này!", "Lỗi", JOptionPane.ERROR_MESSAGE);                cardText = getDisplayTextForCardType(topCard.getType());
+
+                    }            }
+
+                }            
+
+            });            topCardLabel.setText("<html><center>" + topCard.getColor().getDisplayName() + "<br><br>" + 
+
+                                            "<font size='+2'>" + cardText + "</font></center></html>");
+
+            playerHandPanel.add(cardButton);        } else {
+
+        }            topCardLabel.setText("Chưa có lá bài");
+
+                    topCardLabel.setOpaque(false);
+
+        playerHandPanel.revalidate();            topCardLabel.setBackground(null);
+
+        playerHandPanel.repaint();            topCardLabel.setForeground(Color.BLACK);
+
+    }        }
+
+        }
+
+    /**    
+
+     * Tạo nút hiển thị lá bài    /**
+
+     *      * Cập nhật hiển thị bài của người chơi
+
+     * @param card Lá bài     * 
+
+     * @param index Vị trí của lá bài     * @param isCurrentPlayer Có phải lượt của người chơi hiện tại không
+
+     * @return Nút hiển thị lá bài     */
+
+     */    private void updatePlayerHand(boolean isCurrentPlayer) {
+
+    private JButton createCardButton(Card card, int index) {        playerHandPanel.removeAll();
+
+        JButton cardButton = new JButton();        
+
+        cardButton.setPreferredSize(new Dimension(80, 120));        System.out.println("updatePlayerHand: isCurrentPlayer = " + isCurrentPlayer + ", canPlay = " + canPlay);
+
+                
+
+        // Thiết lập màu nền theo màu lá bài        for (int i = 0; i < playerHand.size(); i++) {
+
+        switch (card.getColor()) {            Card card = playerHand.get(i);
+
+            case RED:            JButton cardButton = createCardButton(card, i);
+
+                cardButton.setBackground(Color.RED);            
+
+                break;            final int cardIndex = i;
+
+            case GREEN:            cardButton.addActionListener(e -> {
+
+                cardButton.setBackground(Color.GREEN);                System.out.println("Card clicked, canPlay = " + canPlay);
+
+                break;                if (canPlay) {
+
+            case BLUE:                    // Kiểm tra xem lá bài có thể đánh được không
+
+                cardButton.setBackground(Color.BLUE);                    if (card.canPlayOn(topCard)) {
+
+                cardButton.setForeground(Color.WHITE);                        // Nếu là lá wild, hiển thị dialog chọn màu
+
+                break;                        if (card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR) {
+
+            case YELLOW:                            CardColor selectedColor = showColorSelectionDialog();
+
+                cardButton.setBackground(Color.YELLOW);                            if (selectedColor != null) {
+
+                break;                                clientMain.playCard(cardIndex, selectedColor);
+
+            default:                                canPlay = false;
+
+                cardButton.setBackground(Color.BLACK);                                drawCardButton.setEnabled(false);
+
+                cardButton.setForeground(Color.WHITE);                                endTurnButton.setEnabled(false);
+
+                break;                            }
+
+        }                        } else {
+
+                                    clientMain.playCard(cardIndex, card.getColor());
+
+        // Hiển thị giá trị/loại lá bài                            canPlay = false;
+
+        String cardText;                            drawCardButton.setEnabled(false);
+
+        if (card.getType() == CardType.NUMBER) {                            endTurnButton.setEnabled(false);
+
+            cardText = String.valueOf(card.getValue());                        }
+
+        } else {                    } else {
+
+            cardText = getDisplayTextForCardType(card.getType());                        JOptionPane.showMessageDialog(this, "Bạn không thể đánh lá bài này!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+
+        }                    }
+
+                        } else {
+
+        cardButton.setText("<html><center>" + cardText + "</center></html>");                    JOptionPane.showMessageDialog(this, "Không phải lượt của bạn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+
+        return cardButton;                }
+
+    }            });
+
+                
+
+    /**            cardButton.setEnabled(isCurrentPlayer);
+
+     * Cập nhật hiển thị lá bài trên cùng            playerHandPanel.add(cardButton);
+
+     */        }
+
+    private void updateTopCard() {        
+
+        if (topCard != null) {        playerHandPanel.revalidate();
+
+            // Thiết lập màu nền theo màu lá bài        playerHandPanel.repaint();
+
+            switch (topCard.getColor()) {    }
+
+                case RED:    
+
+                    topCardLabel.setBackground(Color.RED);    /**
+
+                    topCardLabel.setForeground(Color.BLACK);     * Tạo button hiển thị lá bài
+
+                    break;     * 
+
+                case GREEN:     * @param card Lá bài cần hiển thị
+
+                    topCardLabel.setBackground(Color.GREEN);     * @param index Vị trí của lá bài
+
+                    topCardLabel.setForeground(Color.BLACK);     * @return Button hiển thị lá bài
+
+                    break;     */
+
+                case BLUE:    private JButton createCardButton(Card card, int index) {
+
+                    topCardLabel.setBackground(Color.BLUE);        JButton cardButton = new JButton();
+
+                    topCardLabel.setForeground(Color.WHITE);        cardButton.setPreferredSize(new Dimension(80, 120));
+
+                    break;        
+
+                case YELLOW:        Color cardColor = getColorForCard(card.getColor());
+
+                    topCardLabel.setBackground(Color.YELLOW);        
+
+                    topCardLabel.setForeground(Color.BLACK);        cardButton.setBackground(cardColor);
+
+                    break;        cardButton.setForeground(cardColor == Color.BLACK ? Color.WHITE : Color.BLACK);
+
+                default:        
+
+                    topCardLabel.setBackground(Color.BLACK);        String cardText;
+
+                    topCardLabel.setForeground(Color.WHITE);        if (card.getType() == CardType.NUMBER) {
+
+                    break;            cardText = String.valueOf(card.getValue());
+
+            }        } else {
+
+                        cardText = getDisplayTextForCardType(card.getType());
+
+            // Hiển thị giá trị/loại lá bài        }
+
+            String cardText;        
+
+            if (topCard.getType() == CardType.NUMBER) {        cardButton.setText("<html><center>" + card.getColor().getDisplayName() + "<br><br>" + 
+
+                cardText = String.valueOf(topCard.getValue());                          "<font size='+1'>" + cardText + "</font></center></html>");
+
+            } else {        
+
+                cardText = getDisplayTextForCardType(topCard.getType());        return cardButton;
+
+            }    }
+
+                
+
+            topCardLabel.setText("<html><center>" + topCard.getColor().getDisplayName() + "<br><br>" +     /**
+
+                                "<font size='+2'>" + cardText + "</font></center></html>");     * Hiển thị dialog chọn màu
+
+        } else {     * 
+
+            topCardLabel.setText("Chưa có lá bài");     * @return Màu được chọn
+
+            topCardLabel.setOpaque(false);     */
+
+            topCardLabel.setBackground(null);    private CardColor showColorSelectionDialog() {
+
+            topCardLabel.setForeground(Color.BLACK);        String[] options = {"Đỏ", "Xanh dương", "Xanh lá", "Vàng"};
+
+        }        int choice = JOptionPane.showOptionDialog(this, "Chọn màu cho lá bài Wild:",
+
+    }            "Chọn màu", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+
+                null, options, options[0]);
+
+    /**        
+
+     * Lấy text hiển thị cho từng loại lá bài        switch (choice) {
+
+     *             case 0: return CardColor.RED;
+
+     * @param cardType Loại lá bài            case 1: return CardColor.BLUE;
+
+     * @return Text hiển thị            case 2: return CardColor.GREEN;
+
+     */            case 3: return CardColor.YELLOW;
+
+    private String getDisplayTextForCardType(CardType cardType) {            default: return null;
+
+        switch (cardType) {        }
+
+            case SKIP:    }
+
+                return "Bỏ lượt";    
+
+            case REVERSE:    /**
+
+                return "Đảo chiều";     * Lấy màu hiển thị cho lá bài
+
+            case DRAW_TWO:     * 
+
+                return "+2";     * @param cardColor Màu của lá bài
+
+            case WILD:     * @return Màu hiển thị
+
+                return "Đổi màu";     */
+
+            case WILD_DRAW_FOUR:    private Color getColorForCard(CardColor cardColor) {
+
+                return "+4";        switch (cardColor) {
+
+            default:            case RED: return Color.RED;
+
+                return "";            case BLUE: return Color.BLUE;
+
+        }            case GREEN: return Color.GREEN;
+
+    }            case YELLOW: return Color.YELLOW;
+
+                default: return Color.BLACK;
+
+    /**        }
+
+     * Hiển thị dialog chọn màu cho lá Wild    }
+
+     *     
+
+     * @return Màu được chọn    /**
+
+     */     * Lấy text hiển thị cho loại lá bài
+
+    private CardColor showColorSelectionDialog() {     * 
+
+        Object[] options = {     * @param cardType Loại lá bài
+
+            "Đỏ", "Xanh lá", "Xanh dương", "Vàng"     * @return Text hiển thị
+
+        };     */
+
+            private String getDisplayTextForCardType(CardType cardType) {
+
+        int choice = JOptionPane.showOptionDialog(        switch (cardType) {
+
+            this,            case SKIP: return "⊘";
+
+            "Chọn màu cho lá Wild:",            case REVERSE: return "⇄";
+
+            "Chọn màu",            case DRAW_TWO: return "+2";
+
+            JOptionPane.DEFAULT_OPTION,            case WILD: return "W";
+
+            JOptionPane.QUESTION_MESSAGE,            case WILD_DRAW_FOUR: return "+4";
+
+            null,            default: return "";
+
+            options,        }
+
+            options[0]    }
+
+        );    
+
+            /**
+
+        switch (choice) {     * Thêm tin nhắn chat
+
+            case 0:     * 
+
+                return CardColor.RED;     * @param message Tin nhắn chat
+
+            case 1:     */
+
+                return CardColor.GREEN;    public void addChatMessage(String message) {
+
+            case 2:        chatArea.append(message + "\n");
+
+                return CardColor.BLUE;        chatArea.setCaretPosition(chatArea.getDocument().getLength());
+
+            case 3:    }
+
+                return CardColor.YELLOW;}
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * Thêm tin nhắn vào khu vực chat
+     * 
+     * @param message Tin nhắn
+     */
+    public void addChatMessage(String message) {
+        chatArea.append(message + "\n");
+        chatArea.setCaretPosition(chatArea.getDocument().getLength());
+    }
+}

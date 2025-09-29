@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run UnoServer",
+            "request": "launch",
+            "mainClass": "com.uno.server.UnoServer",
+            "projectName": "uno-online"
+        },
+        {
+            "type": "java",
+            "name": "Run UnoClient",
+            "request": "launch",
+            "mainClass": "com.uno.client.UnoClientMain",
+            "projectName": "uno-online"
+        }
+    ]
+}

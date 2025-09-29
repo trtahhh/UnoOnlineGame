@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Biên dịch dự án",
+            "type": "shell",
+            "command": "mvn clean compile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Đóng gói dự án",
+            "type": "shell",
+            "command": "mvn clean package",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Chạy Server",
+            "type": "shell",
+            "command": "mvn exec:java -Dexec.mainClass=\"com.uno.server.UnoServer\"",
+            "group": "none",
+            "problemMatcher": []
+        },
+        {
+            "label": "Chạy Client",
+            "type": "shell",
+            "command": "mvn exec:java -Dexec.mainClass=\"com.uno.client.UnoClientMain\"",
+            "group": "none",
+            "problemMatcher": []
+        }
+    ]
+}
