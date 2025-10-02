@@ -3,6 +3,7 @@ package com.uno.server;
 import com.uno.model.Player;
 import com.uno.utils.Message;
 import com.uno.utils.MessageType;
+import com.uno.utils.StringUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -16,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Class đại diện cho server của game Uno
+ * Main server class for Uno game handling client connections and game rooms
  */
 public class UnoServer {
     private static final int DEFAULT_PORT = 5000;
@@ -43,60 +44,77 @@ public class UnoServer {
     }
     
     /**
-     * Bắt đầu server
+     * Starts the server and begins accepting client connections
      */
     public void start() {
         try {
             serverSocket = new ServerSocket(port);
             running = true;
             
-            System.out.println("Server đang chạy trên cổng " + port);
+            System.out.println(StringUtils.formatNetworkLog("UnoServer", "start", 
+                    "Khoi tao server thanh cong tren cong " + port));
             
-            // Chờ kết nối từ client
+            // Wait for client connections
             while (running) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    System.out.println("Client mới kết nối: " + clientSocket.getInetAddress().getHostAddress());
+                    String clientAddress = clientSocket.getInetAddress().getHostAddress();
+                    System.out.println(StringUtils.formatNetworkLog("UnoServer", "accept", 
+                            "Ket noi moi tu client: " + clientAddress + ":" + clientSocket.getPort()));
                     
-                    // Tạo và khởi chạy handler cho client
+                    // Create and start handler for client
                     ClientHandler clientHandler = new ClientHandler(clientSocket, this);
                     clients.add(clientHandler);
                     clientThreadPool.execute(clientHandler);
                 } catch (IOException e) {
                     if (running) {
-                        System.out.println("Lỗi khi chấp nhận kết nối từ client: " + e.getMessage());
+                        System.out.println(StringUtils.formatNetworkLog("UnoServer", "accept", 
+                                "Loi khi chap nhan ket noi: " + e.getMessage()));
                     }
                 }
             }
         } catch (IOException e) {
-            System.out.println("Lỗi khi khởi tạo server: " + e.getMessage());
+            System.out.println(StringUtils.formatNetworkLog("UnoServer", "start", 
+                    "Loi khoi tao server: " + e.getMessage()));
         } finally {
             stop();
         }
     }
     
     /**
-     * Dừng server
+     * Stops the server and closes all connections
      */
     public void stop() {
         running = false;
         
-        // Đóng tất cả kết nối client
+        System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
+                "Dang dung server..."));
+        
+        // Close all client connections
+        int closedConnections = 0;
         for (ClientHandler client : clients) {
             client.close();
+            closedConnections++;
         }
+        System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
+                "Da dong " + closedConnections + " ket noi client"));
         clients.clear();
         
-        // Đóng threadpool
+        // Shut down thread pool
         clientThreadPool.shutdown();
+        System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
+                "Thread pool da shutdown"));
         
-        // Đóng serverSocket
+        // Close server socket
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
+                System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
+                        "Server socket da dong"));
             }
         } catch (IOException e) {
-            System.out.println("Lỗi khi đóng server socket: " + e.getMessage());
+            System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
+                    "Loi dong server socket: " + e.getMessage()));
         }
         
         System.out.println("Server đã dừng");

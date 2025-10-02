@@ -29,6 +29,28 @@ src/
 - Java JDK 17 trở lên
 - Kết nối mạng LAN hoặc Internet
 
+## Hiển thị tiếng Việt có dấu trong log
+
+Để hiển thị đúng tiếng Việt có dấu trong log của game, bạn cần:
+
+1. Chạy server và client với tham số `-Dfile.encoding=UTF-8`:
+   ```
+   java -Dfile.encoding=UTF-8 -cp target/classes com.uno.server.UnoServer
+   java -Dfile.encoding=UTF-8 -cp target/classes com.uno.client.UnoClientMain
+   ```
+
+2. Nếu sử dụng PowerShell, hãy cài đặt encoding UTF-8:
+   ```powershell
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+   ```
+
+3. Nếu sử dụng Command Prompt (cmd), hãy đổi code page:
+   ```
+   chcp 65001
+   ```
+
+4. Nếu vẫn gặp vấn đề với font chữ, hãy đảm bảo console của bạn đang sử dụng font hỗ trợ Unicode như Consolas hoặc Lucida Console.
+
 ## Cách cài đặt và chạy
 
 ### Cài đặt Maven (nếu chưa có)
@@ -56,14 +78,30 @@ Sau khi đóng gói, bạn sẽ có 2 file JAR trong thư mục target:
 - uno-server-jar-with-dependencies.jar: Chứa server
 - uno-client-jar-with-dependencies.jar: Chứa client
 
+### Sử dụng Visual Studio Code Tasks
+
+Nếu bạn sử dụng Visual Studio Code, có sẵn các task để dễ dàng biên dịch và chạy dự án:
+
+1. Mở menu Terminal > Run Task... hoặc nhấn Ctrl+Shift+P và tìm "Tasks: Run Task"
+2. Chọn một trong các task sau:
+   - **Biên dịch dự án**: Biên dịch mã nguồn (mvn clean compile)
+   - **Đóng gói dự án**: Tạo các file JAR (mvn clean package)
+   - **Chạy Server**: Khởi động máy chủ Uno
+   - **Chạy Client**: Khởi động ứng dụng khách Uno
+   - **Chạy Server với UTF-8**: Khởi động máy chủ với hỗ trợ UTF-8 để hiển thị đúng tiếng Việt có dấu
+   - **Chạy Client với UTF-8**: Khởi động ứng dụng khách với hỗ trợ UTF-8 để hiển thị đúng tiếng Việt có dấu
+
 ### Chạy Server
 
 ```bash
 # Sử dụng Maven
 mvn exec:java -Dexec.mainClass="com.uno.server.UnoServer"
 
+# Chạy từ classes với encoding UTF-8 để hiển thị đúng tiếng Việt có dấu
+java -Dfile.encoding=UTF-8 -cp target/classes com.uno.server.UnoServer
+
 # Hoặc sử dụng JAR đã đóng gói
-java -jar target/uno-server-jar-with-dependencies.jar
+java -Dfile.encoding=UTF-8 -jar target/uno-server-jar-with-dependencies.jar
 ```
 
 ### Chạy Client
@@ -72,9 +110,68 @@ java -jar target/uno-server-jar-with-dependencies.jar
 # Sử dụng Maven
 mvn exec:java -Dexec.mainClass="com.uno.client.UnoClientMain"
 
+# Chạy từ classes với encoding UTF-8 để hiển thị đúng tiếng Việt có dấu
+java -Dfile.encoding=UTF-8 -cp target/classes com.uno.client.UnoClientMain
+
 # Hoặc sử dụng JAR đã đóng gói
-java -jar target/uno-client-jar-with-dependencies.jar
+java -Dfile.encoding=UTF-8 -jar target/uno-client-jar-with-dependencies.jar
 ```
+
+## Kiểm thử và khắc phục sự cố
+
+### Kiểm tra các quá trình Java đang chạy
+
+Nếu gặp lỗi "Address already in use: bind" khi khởi động server, kiểm tra và dừng các quá trình Java đang chạy:
+
+```bash
+# Liệt kê tất cả các quá trình Java
+jps
+
+# Dừng một quá trình Java cụ thể (thay <pid> bằng ID của quá trình)
+# PowerShell
+Stop-Process -Id <pid>
+# hoặc Linux/macOS
+kill <pid>
+```
+
+### Kiểm tra port 5000 đã được sử dụng chưa
+
+```bash
+# Windows
+netstat -ano | findstr 5000
+
+# Linux/macOS
+netstat -anp | grep 5000
+```
+
+### Kiểm tra kết nối mạng
+
+Nếu client không thể kết nối đến server:
+1. Đảm bảo server đã được khởi động
+2. Kiểm tra địa chỉ IP và cổng (mặc định là port 5000)
+3. Đảm bảo tường lửa không chặn kết nối
+4. Thử kết nối bằng địa chỉ localhost (127.0.0.1) trước khi thử kết nối qua mạng LAN/Internet
+
+## Script Kiểm thử Nhanh
+
+Dự án cung cấp một script PowerShell để kiểm thử nhanh game Uno:
+
+```powershell
+# Chạy script từ thư mục gốc của dự án
+.\test-uno-game.ps1
+```
+
+Script này sẽ:
+1. Thiết lập môi trường PowerShell với UTF-8
+2. Biên dịch dự án
+3. Dừng bất kỳ quá trình Java nào đang chạy (nếu có)
+4. Khởi động Server trong một cửa sổ PowerShell riêng
+5. Khởi động Client trong một cửa sổ PowerShell riêng
+
+Script này rất hữu ích để:
+- Kiểm tra nhanh việc hiển thị tiếng Việt có dấu trong logs
+- Kiểm thử kết nối giữa client và server
+- Chạy demo trò chơi
 
 ### Chạy từ Visual Studio Code
 

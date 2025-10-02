@@ -17,7 +17,7 @@ import java.util.Map;
 public class UnoClientMain implements UnoClient.ClientListener {
     private UnoClient client;
     private String playerId;
-    private String currentRoomId;
+    // private String currentRoomId; // Removed unused field
     
     private LoginGUI loginGUI;
     private LobbyGUI lobbyGUI;
@@ -264,7 +264,7 @@ public class UnoClientMain implements UnoClient.ClientListener {
             // Cập nhật thông tin phòng hiện tại
             // Đây là đối tượng GameRoom được gửi từ server
             GameRoom room = (GameRoom) roomData;
-            currentRoomId = room.getId();
+            // currentRoomId = room.getId(); // Removed as it's not used
             
             if (gameGUI == null) {
                 // Nếu chưa có giao diện game, hiển thị phòng chờ

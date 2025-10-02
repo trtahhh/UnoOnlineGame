@@ -4,12 +4,13 @@ import com.uno.model.Game;
 import com.uno.model.Player;
 import com.uno.utils.Message;
 import com.uno.utils.MessageType;
+import com.uno.utils.StringUtils;
 
 import java.io.*;
 import java.net.Socket;
 
 /**
- * Class đại diện cho một kết nối client với server
+ * Handles a client connection with the server, processing messages and managing game state
  */
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
@@ -19,38 +20,56 @@ public class ClientHandler implements Runnable {
     private Player player;
     private boolean running;
     
+    /**
+     * Creates a new client handler for the specified socket
+     * 
+     * @param socket The client socket connection
+     * @param server The Uno server instance
+     */
     public ClientHandler(Socket socket, UnoServer server) {
         this.clientSocket = socket;
         this.server = server;
         this.running = true;
+        
+        System.out.println(StringUtils.formatNetworkLog("ClientHandler", "constructor", 
+                "Tạo handler cho client " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort()));
     }
     
     @Override
     public void run() {
         try {
-            // Khởi tạo luồng input/output
+            // Initialize input/output streams
+            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "run", 
+                    "Thiết lập luồng I/O cho client " + clientSocket.getInetAddress().getHostAddress()));
             output = new ObjectOutputStream(clientSocket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(clientSocket.getInputStream());
+            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "run", 
+                    "Luồng I/O đã sẵn sàng"));
             
-            // Xử lý tin nhắn từ client
+            // Process messages from client
             while (running) {
                 Message message = (Message) input.readObject();
+                System.out.println(StringUtils.formatNetworkLog("ClientHandler", "nhận_tin", 
+                        "Nhận tin nhắn: " + message.getType()));
                 handleMessage(message);
             }
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Lỗi trong kết nối với client: " + e.getMessage());
+            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "run", 
+                    "Lỗi kết nối: " + e.getMessage()));
         } finally {
             close();
         }
     }
     
     /**
-     * Xử lý tin nhắn từ client
+     * Processes messages from the client and routes to appropriate handlers
      * 
-     * @param message Tin nhắn cần xử lý
+     * @param message The message to process
      */
     private void handleMessage(Message message) {
+
+                
         switch (message.getType()) {
             case CONNECT:
                 handleConnect(message);
@@ -89,7 +108,7 @@ public class ClientHandler implements Runnable {
                 handleChatMessage(message);
                 break;
             default:
-                sendMessage(new Message(MessageType.ERROR, "Loại tin nhắn không được hỗ trợ", server.getServerId()));
+                sendMessage(new Message(MessageType.ERROR, "Unsupported message type", server.getServerId()));
                 break;
         }
     }
@@ -133,7 +152,7 @@ public class ClientHandler implements Runnable {
             // Thông báo cho tất cả client về danh sách phòng mới
             server.broadcastRoomList();
         } else {
-            sendMessage(new Message(MessageType.ERROR, "Không thể tạo phòng", server.getServerId()));
+            sendMessage(new Message(MessageType.ERROR, "Cannot create room", server.getServerId()));
         }
     }
 
@@ -155,7 +174,7 @@ public class ClientHandler implements Runnable {
             // Cập nhật danh sách phòng cho tất cả người chơi
             server.broadcastRoomList();
         } else {
-            sendMessage(new Message(MessageType.ERROR, "Không thể tham gia phòng", server.getServerId()));
+            sendMessage(new Message(MessageType.ERROR, "Cannot join room", server.getServerId()));
         }
     }
     
@@ -205,42 +224,39 @@ public class ClientHandler implements Runnable {
                 // Cập nhật trạng thái game cho mỗi người chơi
                 room.updateGameState();
             } else {
-                sendMessage(new Message(MessageType.ERROR, "Không thể bắt đầu game", server.getServerId()));
+                sendMessage(new Message(MessageType.ERROR, "Cannot start game", server.getServerId()));
             }
         } else {
-            sendMessage(new Message(MessageType.ERROR, "Bạn không phải là chủ phòng", server.getServerId()));
+            sendMessage(new Message(MessageType.ERROR, "You are not the room owner", server.getServerId()));
         }
     }
     
     /**
-     * Xử lý tin nhắn đánh bài từ client
+     * Handles a play card message from the client
      * 
-     * @param message Tin nhắn đánh bài
+     * @param message The play card message containing card index and color
      */
     private void handlePlayCard(Message message) {
         GameRoom room = server.getRoomByPlayer(player.getId());
         
         if (room != null) {
-            @SuppressWarnings("unchecked")
+            // Extract data from message (cardIndex and selected color)
             Object[] data = (Object[]) message.getData();
             int cardIndex = (Integer) data[0];
             String colorName = (String) data[1];
             
             Game game = room.getGame();
-            Player currentPlayer = game.getCurrentPlayer();
-            String currentPlayerId = currentPlayer != null ? currentPlayer.getId() : null;
-            System.out.println("HandlePlayCard: currentPlayerId = " + currentPlayerId + ", playerId = " + player.getId());
             
             if (room.playCard(player.getId(), cardIndex, colorName)) {
-                // Cập nhật trạng thái game cho tất cả người chơi
+                // Update game state for all players
                 room.updateGameState();
                 
-                // Kiểm tra xem game đã kết thúc chưa
+                // Check if game is over
                 if (game.isGameOver()) {
                     room.broadcast(new Message(MessageType.GAME_OVER, game.getWinner(), server.getServerId()));
                 }
             } else {
-                sendMessage(new Message(MessageType.ERROR, "Không thể đánh bài", server.getServerId()));
+                sendMessage(new Message(MessageType.ERROR, "Cannot play card", server.getServerId()));
             }
         }
     }
@@ -256,7 +272,7 @@ public class ClientHandler implements Runnable {
                 // Cập nhật trạng thái game cho người chơi đã rút bài
                 sendMessage(new Message(MessageType.GAME_UPDATE, room.getPlayerGameState(player.getId()), server.getServerId()));
             } else {
-                sendMessage(new Message(MessageType.ERROR, "Không thể rút bài", server.getServerId()));
+                sendMessage(new Message(MessageType.ERROR, "Cannot draw card", server.getServerId()));
             }
         }
     }
@@ -272,7 +288,7 @@ public class ClientHandler implements Runnable {
                 // Cập nhật trạng thái game cho tất cả người chơi
                 room.updateGameState();
             } else {
-                sendMessage(new Message(MessageType.ERROR, "Không thể kết thúc lượt", server.getServerId()));
+                sendMessage(new Message(MessageType.ERROR, "Cannot end turn", server.getServerId()));
             }
         }
     }
@@ -305,7 +321,7 @@ public class ClientHandler implements Runnable {
                 // Cập nhật trạng thái game cho tất cả người chơi
                 room.updateGameState();
             } else {
-                sendMessage(new Message(MessageType.ERROR, "Không thể thách thức", server.getServerId()));
+                sendMessage(new Message(MessageType.ERROR, "Cannot challenge", server.getServerId()));
             }
         }
     }
@@ -331,42 +347,70 @@ public class ClientHandler implements Runnable {
      */
     public void sendMessage(Message message) {
         try {
+            // Log network message transmission
+            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "gửi_tin", 
+                    "Gửi " + message.getType() + " đến " + 
+                    (player != null ? player.getName() : "client")));
+            
+            // Send message
             output.writeObject(message);
-            // FIX: Reset ObjectOutputStream để tránh caching đối tượng.
-            // Điều này đảm bảo trạng thái mới nhất của GameState luôn được gửi đi.
+            
+            // Reset ObjectOutputStream to avoid object caching
+            // This ensures the latest state of GameState is always sent
             output.reset(); 
             output.flush();
         } catch (IOException e) {
-            System.out.println("Lỗi khi gửi tin nhắn đến client: " + e.getMessage());
+            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "gửi_tin", 
+                    "Lỗi gửi tin nhắn: " + e.getMessage()));
             close();
         }
     }
     
     /**
-     * Đóng kết nối với client
+     * Closes the connection with the client
      */
     public void close() {
+        if (!running) {
+            // Already closed
+            return;
+        }
+        
+        System.out.println(StringUtils.formatNetworkLog("ClientHandler", "dong_ket_noi", 
+                "Dong ket noi voi " + (player != null ? player.getName() : "client")));
+                
         try {
             running = false;
             
-            // Rời khỏi phòng nếu đang ở trong phòng
+            // Leave room if currently in one
             handleLeaveRoom();
             
-            if (input != null) input.close();
-            if (output != null) output.close();
-            if (clientSocket != null) clientSocket.close();
+            // Close all streams and socket
+            if (input != null) {
+                input.close();
+            }
             
-            // Thông báo cho server về ngắt kết nối
+            if (output != null) {
+                output.close();
+            }
+            
+            if (clientSocket != null) {
+                clientSocket.close();
+                System.out.println(StringUtils.formatNetworkLog("ClientHandler", "dong_socket", 
+                        "Socket da dong: " + clientSocket.getInetAddress().getHostAddress()));
+            }
+            
+            // Notify server about disconnection
             server.removeClient(this);
         } catch (IOException e) {
-            System.out.println("Lỗi khi đóng kết nối với client: " + e.getMessage());
+            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "dong_ket_noi", 
+                    "Loi dong ket noi: " + e.getMessage()));
         }
     }
     
     /**
-     * Lấy người chơi liên kết với kết nối này
+     * Gets the player associated with this connection
      * 
-     * @return Người chơi
+     * @return The player object
      */
     public Player getPlayer() {
         return player;

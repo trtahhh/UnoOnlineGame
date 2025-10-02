@@ -174,14 +174,22 @@ public class Game implements Serializable {
             case DRAW_TWO:
                 nextPlayer(); // Chuyển đến người chơi kế tiếp
                 Player nextPlayer = getCurrentPlayer();
-                nextPlayer.addCards(deck.drawCards(2)); // Người chơi kế tiếp rút 2 lá
+                // Người chơi kế tiếp rút 2 lá (không thể chồng lá +2 trong luật cơ bản)
+                nextPlayer.addCards(deck.drawCards(2)); 
                 nextPlayer(); // Người chơi kế tiếp bị bỏ qua lượt
                 break;
             case WILD_DRAW_FOUR:
+                // Lưu ý: Với lá Wild Draw Four, người chơi kế tiếp có thể thách thức
+                // trước khi rút bài. Logic thách thức được xử lý trong class GameRoom
+                // Chúng ta sẽ chuyển lượt đến người chơi kế tiếp nhưng chưa bắt họ rút bài ngay
+                nextPlayer(); 
+                // Cần chờ thách thức từ người chơi kế tiếp
+                // Nếu không có thách thức, người chơi kế tiếp sẽ phải rút 4 lá 
+                // và bị bỏ qua lượt (xử lý bởi ClientHandler)
+                break;
+            case WILD:
+                // Wild chỉ đổi màu, không có hiệu ứng đặc biệt khác
                 nextPlayer(); // Chuyển đến người chơi kế tiếp
-                nextPlayer = getCurrentPlayer();
-                nextPlayer.addCards(deck.drawCards(4)); // Người chơi kế tiếp rút 4 lá
-                nextPlayer(); // Người chơi kế tiếp bị bỏ qua lượt
                 break;
             default:
                 nextPlayer(); // Chuyển đến người chơi kế tiếp

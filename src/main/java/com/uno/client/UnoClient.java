@@ -1,10 +1,10 @@
 package com.uno.client;
 
-import com.uno.model.Card;
 import com.uno.model.CardColor;
 import com.uno.server.GameRoom;
 import com.uno.utils.Message;
 import com.uno.utils.MessageType;
+import com.uno.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -16,7 +16,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Class quản lý kết nối mạng phía client
+ * Client network communication manager class
  */
 public class UnoClient implements Runnable {
     private static final int DEFAULT_PORT = 5000;
@@ -44,74 +44,106 @@ public class UnoClient implements Runnable {
     }
     
     /**
-     * Kết nối đến server
+     * Connect to the game server
      * 
-     * @param playerName Tên người chơi
-     * @return true nếu kết nối thành công, ngược lại false
+     * @param playerName Name of the player
+     * @return true if connection was successful, false otherwise
      */
     public boolean connect(String playerName) {
         try {
+            System.out.println(StringUtils.formatNetworkLog("UnoClient", "ket_noi", 
+                    "Dang ket noi den server " + serverAddress + ":" + serverPort));
+                    
             socket = new Socket(serverAddress, serverPort);
             
-            // Khởi tạo luồng input/output
+            // Initialize input/output streams
+            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
+                    "Thiết lập luồng I/O"));
+                    
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(socket.getInputStream());
             
-            // Bắt đầu thread xử lý tin nhắn
+            // Start message handling thread
             running = true;
             new Thread(this).start();
             
-            // Gửi tin nhắn kết nối đến server
+            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
+                    "Thread xử lý tin nhắn đã khởi động"));
+            
+            // Send connection message to server
             Message connectMessage = new Message(MessageType.CONNECT, playerName, "");
             sendMessage(connectMessage);
             
+            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
+                    "Kết nối thành công, gửi tin CONNECT"));
+            
             return true;
         } catch (IOException e) {
-            System.out.println("Lỗi khi kết nối đến server: " + e.getMessage());
+            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
+                    "Lỗi kết nối: " + e.getMessage()));
             clientListener.onConnectionError("Không thể kết nối đến server: " + e.getMessage());
             return false;
         }
     }
     
     /**
-     * Ngắt kết nối với server
+     * Disconnect from the server
      */
     public void disconnect() {
         if (running) {
+            System.out.println(StringUtils.formatNetworkLog("UnoClient", "ngắt_kết_nối", 
+                    "Đang ngắt kết nối khỏi server"));
+                    
             running = false;
             
-            // Gửi tin nhắn ngắt kết nối đến server
+            // Send disconnect message to server
             sendMessage(new Message(MessageType.DISCONNECT, null, clientId));
             
-            // Đóng các luồng và socket
+            // Close streams and socket
             try {
-                if (output != null) output.close();
-                if (input != null) input.close();
-                if (socket != null) socket.close();
+                if (output != null) {
+                    output.close();
+                }
+                
+                if (input != null) {
+                    input.close();
+                }
+                
+                if (socket != null) {
+                    socket.close();
+                    System.out.println(StringUtils.formatNetworkLog("UnoClient", "đóng_socket", 
+                            "Socket đã đóng"));
+                }
             } catch (IOException e) {
-                System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
+                System.out.println(StringUtils.formatNetworkLog("UnoClient", "ngắt_kết_nối", 
+                        "Lỗi đóng kết nối: " + e.getMessage()));
             }
             
             clientListener.onDisconnected();
+            System.out.println(StringUtils.formatNetworkLog("UnoClient", "ngắt_kết_nối", 
+                    "Ngắt kết nối hoàn tất"));
         }
     }
     
     /**
-     * Gửi tin nhắn đến server
+     * Send a message to the server
      * 
-     * @param message Tin nhắn cần gửi
+     * @param message Message to send
      */
     public void sendMessage(Message message) {
         if (output != null) {
             try {
+                System.out.println(StringUtils.formatNetworkLog("UnoClient", "gửi_tin", 
+                        "Gửi tin nhắn: " + message.getType()));
                 output.writeObject(message);
                 output.flush();
             } catch (IOException e) {
-                System.out.println("Lỗi khi gửi tin nhắn: " + e.getMessage());
+                System.out.println(StringUtils.formatNetworkLog("UnoClient", "gửi_tin", 
+                        "Lỗi gửi tin nhắn: " + e.getMessage()));
                 if (running) {
                     running = false;
-                    clientListener.onConnectionError("Mất kết nối với server: " + e.getMessage());
+                    clientListener.onConnectionError("Mất kết nối đến server: " + e.getMessage());
                 }
             }
         }

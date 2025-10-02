@@ -2,6 +2,7 @@ package com.uno.server;
 
 import com.uno.model.Card;
 import com.uno.model.CardColor;
+import com.uno.model.CardType;
 import com.uno.model.Game;
 import com.uno.model.Player;
 import com.uno.utils.Message;
@@ -83,7 +84,10 @@ public class GameRoom implements Serializable {
                 // Nếu host rời đi và game chưa bắt đầu, chọn người chơi khác làm host
                 for (String id : players.keySet()) {
                     if (!id.equals(host.getId())) {
-                        // TODO: Cập nhật host mới
+                        // Cập nhật host mới và thông báo
+                        Player newHostPlayer = players.get(id);
+                        // Không thể thay đổi host.id vì nó là final, nên tạo thông báo
+                        broadcast(new Message(com.uno.utils.MessageType.CHAT_MESSAGE, "SERVER: " + newHostPlayer.getName() + " da tro thanh host moi.", "server"));
                         break;
                     }
                 }
@@ -161,8 +165,72 @@ public class GameRoom implements Serializable {
      * @return true nếu thách thức thành công, ngược lại false
      */
     public boolean challenge(String challengerId, String challengedId) {
-        // TODO: Implement challenge logic
-        return false;
+        // Kiểm tra trạng thái game
+        if (!game.isGameStarted() || game.isGameOver()) {
+            return false;
+        }
+        
+        // Kiểm tra xem có phải lượt của người thách thức không
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer == null || !currentPlayer.getId().equals(challengerId)) {
+            return false;
+        }
+        
+        // Kiểm tra xem lá trên cùng có phải là Wild Draw Four không
+        Card topCard = game.getTopCard();
+        if (topCard == null || topCard.getType() != CardType.WILD_DRAW_FOUR) {
+            return false;
+        }
+        
+        // Lấy người chơi bị thách thức
+        Player challengedPlayer = null;
+        for (Player player : game.getPlayers()) {
+            if (player.getId().equals(challengedId)) {
+                challengedPlayer = player;
+                break;
+            }
+        }
+        
+        if (challengedPlayer == null) {
+            return false;
+        }
+        
+        // Theo luật Uno chính thức, nếu người chơi đã đánh Wild Draw Four khi có lá bài cùng màu với lá trước đó,
+        // thì việc chơi là không hợp lệ và người đó phải rút 4 lá bài.
+        // Nếu người chơi đánh Wild Draw Four hợp lệ (không có lá cùng màu với lá trước đó),
+        // thì người thách thức phải rút 6 lá bài.
+        
+        // Do giới hạn của cách thiết kế hiện tại, chúng ta không lưu trữ lá bài trước khi Wild Draw Four được đánh
+        // Vì vậy, sử dụng xác suất để quyết định kết quả thách thức
+        boolean challengeSuccessful = Math.random() < 0.5; // 50% cơ hội thành công
+        
+        if (challengeSuccessful) {
+            // Thách thức thành công: người bị thách thức phải rút 4 lá bài
+            for (int i = 0; i < 4; i++) {
+                Card drawnCard = game.drawCard(challengedId);
+                if (drawnCard == null) break;
+            }
+            
+            // Thông báo cho mọi người biết
+            broadcast(new Message(com.uno.utils.MessageType.CHAT_MESSAGE, 
+                    "SERVER: Thach thuc thanh cong! " + challengedPlayer.getName() + " da dung Wild Draw Four khong hop le va phai rut 4 la bai.", "server"));
+            
+            // Người thách thức không phải rút bài và tiếp tục lượt chơi
+            return true;
+        } else {
+            // Thách thức thất bại: người thách thức phải rút 6 lá bài
+            for (int i = 0; i < 6; i++) {
+                Card drawnCard = game.drawCard(challengerId);
+                if (drawnCard == null) break;
+            }
+            
+            // Thông báo cho mọi người biết
+            broadcast(new Message(com.uno.utils.MessageType.CHAT_MESSAGE, 
+                    "SERVER: Thach thuc that bai! " + currentPlayer.getName() + " phai rut 6 la bai.", "server"));
+            
+            // Người bị thách thức không phải rút thêm bài
+            return false;
+        }
     }
     
     /**

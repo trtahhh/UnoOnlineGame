@@ -34,11 +34,8 @@ public class LobbyGUI extends JFrame {
     private JTextField chatField;
     private JButton sendButton;
     
-    private boolean inRoom;
-    
     public LobbyGUI(UnoClientMain clientMain) {
         this.clientMain = clientMain;
-        this.inRoom = false;
         
         initComponents();
         setupListeners();
@@ -292,7 +289,7 @@ public class LobbyGUI extends JFrame {
      * Hiển thị giao diện sảnh
      */
     public void showLobbyView() {
-        inRoom = false;
+        // inRoom = false; // Removed as field is not used
         createRoomButton.setEnabled(true);
         joinRoomButton.setEnabled(true);
         refreshButton.setEnabled(true);
@@ -310,7 +307,7 @@ public class LobbyGUI extends JFrame {
      * Hiển thị giao diện phòng chờ
      */
     public void showRoomView() {
-        inRoom = true;
+        // inRoom = true; // Removed as field is not used
         createRoomButton.setEnabled(false);
         joinRoomButton.setEnabled(false);
         refreshButton.setEnabled(false);

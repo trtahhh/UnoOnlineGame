@@ -61,8 +61,8 @@ public class GameGUI extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         
-        // FIX: Màu nền tổng thể đẹp hơn
-        getContentPane().setBackground(new Color(230, 230, 250)); // Lavender
+        // Clean, minimalist background
+        getContentPane().setBackground(new Color(248, 249, 250)); // Light gray
         
         // Khi đóng cửa sổ, đảm bảo thông báo cho server
         addWindowListener(new WindowAdapter() {
@@ -89,64 +89,60 @@ public class GameGUI extends JFrame {
     private void initComponents() {
         setLayout(new BorderLayout());
         
-        // FIX: Panel chính với màu nền hài hòa
+        // Clean main panel
         gamePanel = new JPanel(new BorderLayout());
-        gamePanel.setBackground(new Color(230, 230, 250)); // Lavender
+        gamePanel.setBackground(new Color(248, 249, 250)); // Light gray
         
-        // FIX: Redesign thanh thông tin trên đầu
-        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 50, 12));
-        infoPanel.setBackground(new Color(72, 61, 139)); // Dark slate blue
+        // Clean info panel at top
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 15));
+        infoPanel.setBackground(Color.WHITE);
         infoPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createRaisedBevelBorder(),
+            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(222, 226, 230)),
             BorderFactory.createEmptyBorder(8, 15, 8, 15)
         ));
         
-        currentPlayerLabel = new JLabel("LUOT CUA: ");
-        currentPlayerLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        currentPlayerLabel.setForeground(Color.WHITE);
+        currentPlayerLabel = new JLabel("Current Turn: ");
+        currentPlayerLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        currentPlayerLabel.setForeground(new Color(73, 80, 87));
         
-        // Tạo separator
-        JLabel separator = new JLabel(" | ");
+        // Clean separator
+        JLabel separator = new JLabel(" • ");
         separator.setFont(new Font("Arial", Font.BOLD, 16));
-        separator.setForeground(new Color(255, 215, 0)); // Gold
+        separator.setForeground(new Color(173, 181, 189));
         
-        directionLabel = new JLabel("CHIEU CHOI: >>>");
-        directionLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        directionLabel.setForeground(new Color(255, 215, 0)); // Gold
+        directionLabel = new JLabel("Direction: →");
+        directionLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        directionLabel.setForeground(new Color(73, 80, 87));
         
         infoPanel.add(currentPlayerLabel);
         infoPanel.add(separator);
         infoPanel.add(directionLabel);
         
-        // FIX: Redesign panel trung tâm với layout đẹp hơn
+        // Clean center panel for top card
         topCardPanel = new JPanel();
         topCardPanel.setLayout(new BoxLayout(topCardPanel, BoxLayout.Y_AXIS));
-        topCardPanel.setBackground(new Color(25, 111, 61)); // Màu xanh đậm hơn
+        topCardPanel.setBackground(Color.WHITE);
         topCardPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLoweredBevelBorder(),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+            BorderFactory.createMatteBorder(1, 0, 1, 0, new Color(222, 226, 230)),
+            BorderFactory.createEmptyBorder(30, 30, 30, 30)
         ));
         
-        // Thêm label "Lá bài hiện tại"
-        JLabel currentCardLabel = new JLabel("LA BAI HIEN TAI");
-        currentCardLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        currentCardLabel.setForeground(Color.WHITE);
+        // Simple label for current card
+        JLabel currentCardLabel = new JLabel("Current Card");
+        currentCardLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        currentCardLabel.setForeground(new Color(73, 80, 87));
         currentCardLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        topCardLabel = new JLabel("Chưa có lá bài");
-        topCardLabel.setPreferredSize(new Dimension(140, 200));
-        topCardLabel.setMaximumSize(new Dimension(140, 200));
-        topCardLabel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createRaisedBevelBorder(),
-            BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.WHITE, 2),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-            )
-        ));
+        topCardLabel = new JLabel("No Card");
+        topCardLabel.setPreferredSize(new Dimension(120, 180));
+        topCardLabel.setMaximumSize(new Dimension(120, 180));
+        topCardLabel.setBorder(BorderFactory.createLineBorder(new Color(222, 226, 230), 2));
         topCardLabel.setOpaque(true);
+        topCardLabel.setBackground(Color.WHITE);
         topCardLabel.setHorizontalAlignment(SwingConstants.CENTER);
         topCardLabel.setVerticalAlignment(SwingConstants.CENTER);
         topCardLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        topCardLabel.setForeground(new Color(173, 181, 189));
         topCardLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         topCardPanel.add(Box.createVerticalGlue());
@@ -155,19 +151,19 @@ public class GameGUI extends JFrame {
         topCardPanel.add(topCardLabel);
         topCardPanel.add(Box.createVerticalGlue());
         
-        // FIX: Redesign panel đối thủ đẹp hơn
+        // Clean other players panel
         JPanel otherPlayersPanel = new JPanel();
         otherPlayersPanel.setLayout(new BoxLayout(otherPlayersPanel, BoxLayout.Y_AXIS));
-        otherPlayersPanel.setBackground(new Color(248, 248, 255));
+        otherPlayersPanel.setBackground(new Color(248, 249, 250));
         otherPlayersPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(100, 149, 237), 2),
-                "DOI THU",
+                BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(222, 226, 230)),
+                "Other Players",
                 0, 0,
                 new Font("Arial", Font.BOLD, 14),
-                new Color(25, 25, 112)
+                new Color(73, 80, 87)
             ),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         otherPlayersPanel.setPreferredSize(new Dimension(200, 0));
         
@@ -177,33 +173,34 @@ public class GameGUI extends JFrame {
             playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
             playerPanel.setBackground(Color.WHITE);
             playerPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createRaisedBevelBorder(),
-                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+                BorderFactory.createLineBorder(new Color(222, 226, 230), 1),
+                BorderFactory.createEmptyBorder(12, 12, 12, 12)
             ));
-            playerPanel.setMaximumSize(new Dimension(180, 100));
+            playerPanel.setMaximumSize(new Dimension(180, 90));
             
-            JLabel nameLabel = new JLabel("Ten: ");
-            nameLabel.setFont(new Font("Arial", Font.BOLD, 12));
+            JLabel nameLabel = new JLabel("Player " + (i + 1));
+            nameLabel.setFont(new Font("Arial", Font.BOLD, 13));
             nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            nameLabel.setForeground(new Color(73, 80, 87));
             
-            JLabel cardCountLabel = new JLabel("So bai: 0");
+            JLabel cardCountLabel = new JLabel("Cards: 0");
             cardCountLabel.setFont(new Font("Arial", Font.PLAIN, 11));
             cardCountLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            cardCountLabel.setForeground(new Color(139, 69, 19)); // Brown color
+            cardCountLabel.setForeground(new Color(108, 117, 125));
             
-            JLabel unoLabel = new JLabel("UNO: Khong");
+            JLabel unoLabel = new JLabel("UNO: No");
             unoLabel.setFont(new Font("Arial", Font.PLAIN, 10));
             unoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            unoLabel.setForeground(new Color(220, 20, 60)); // Crimson
+            unoLabel.setForeground(new Color(220, 53, 69));
             
             playerPanel.add(nameLabel);
-            playerPanel.add(Box.createVerticalStrut(3));
+            playerPanel.add(Box.createVerticalStrut(5));
             playerPanel.add(cardCountLabel);
             playerPanel.add(Box.createVerticalStrut(3));
             playerPanel.add(unoLabel);
             
             otherPlayersPanel.add(playerPanel);
-            if (i < 2) otherPlayersPanel.add(Box.createVerticalStrut(10));
+            if (i < 2) otherPlayersPanel.add(Box.createVerticalStrut(15));
             otherPlayerPanels.add(playerPanel);
         }
         
@@ -241,29 +238,13 @@ public class GameGUI extends JFrame {
         handScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         
         // FIX: Cải thiện panel chứa các nút hành động
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 8));
-        actionPanel.setBackground(new Color(248, 248, 255)); // Ghost white
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        actionPanel.setBackground(Color.WHITE);
+        actionPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(222, 226, 230)));
         
-        drawCardButton = new JButton("RUT BAI");
-        drawCardButton.setFont(new Font("Arial", Font.BOLD, 12));
-        drawCardButton.setPreferredSize(new Dimension(120, 35));
-        drawCardButton.setBackground(new Color(135, 206, 250)); // Light sky blue
-        drawCardButton.setForeground(Color.BLACK);
-        drawCardButton.setBorder(BorderFactory.createRaisedBevelBorder());
-        
-        endTurnButton = new JButton("KET THUC LUOT");
-        endTurnButton.setFont(new Font("Arial", Font.BOLD, 12));
-        endTurnButton.setPreferredSize(new Dimension(140, 35));
-        endTurnButton.setBackground(new Color(255, 165, 0)); // Orange
-        endTurnButton.setForeground(Color.BLACK);
-        endTurnButton.setBorder(BorderFactory.createRaisedBevelBorder());
-        
-        unoButton = new JButton("UNO!");
-        unoButton.setFont(new Font("Arial", Font.BOLD, 12));
-        unoButton.setPreferredSize(new Dimension(100, 35));
-        unoButton.setBackground(new Color(255, 69, 0)); // Red orange
-        unoButton.setForeground(Color.WHITE);
-        unoButton.setBorder(BorderFactory.createRaisedBevelBorder());
+        drawCardButton = createCleanButton("Draw Card", new Color(0, 123, 255), Color.WHITE);
+        endTurnButton = createCleanButton("End Turn", new Color(108, 117, 125), Color.WHITE);
+        unoButton = createCleanButton("UNO!", new Color(220, 53, 69), Color.WHITE);
         
         actionPanel.add(drawCardButton);
         actionPanel.add(endTurnButton);
@@ -334,6 +315,9 @@ public class GameGUI extends JFrame {
         
         // Thiết lập trạng thái ban đầu
         canPlay = false;
+        
+        // Hiển thị hướng dẫn ngắn cho người chơi mới
+        showGameInstructions();
     }
     
     /**
@@ -585,160 +569,333 @@ public class GameGUI extends JFrame {
      * @return Nút hiển thị lá bài
      */
     private JButton createCardButton(Card card) {
-        JButton cardButton = new JButton();
-        // FIX: Kích thước lá bài vừa phải và đẹp
+        JButton cardButton = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Clean, minimalist card design
+                int width = getWidth();
+                int height = getHeight();
+                
+                // Background color based on card color - vibrant and clear
+                Color bgColor;
+                String colorSymbol = "";
+                switch (card.getColor()) {
+                    case RED:
+                        bgColor = new Color(220, 53, 69); // Bright red
+                        colorSymbol = "🔴";
+                        break;
+                    case GREEN: 
+                        bgColor = new Color(40, 167, 69); // Bright green
+                        colorSymbol = "🟢";
+                        break;
+                    case BLUE:
+                        bgColor = new Color(0, 123, 255); // Bright blue
+                        colorSymbol = "🔵";
+                        break;
+                    case YELLOW:
+                        bgColor = new Color(255, 193, 7); // Bright yellow
+                        colorSymbol = "🟡";
+                        break;
+                    default:
+                        bgColor = new Color(52, 58, 64); // Dark gray for Wild cards
+                        colorSymbol = "⚫";
+                        break;
+                }
+                
+                g2.setColor(bgColor);
+                g2.fillRoundRect(0, 0, width, height, 15, 15);
+                
+                // Clean white border
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(2f));
+                g2.drawRoundRect(1, 1, width-2, height-2, 15, 15);
+                
+                // Card content
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 28));
+                
+                String displayText;
+                String typeSymbol = "";
+                
+                if (card.getType() == CardType.NUMBER) {
+                    displayText = String.valueOf(card.getValue());
+                } else {
+                    // Sử dụng biểu tượng Unicode rõ ràng hơn cho các lá đặc biệt
+                    switch (card.getType()) {
+                        case SKIP:
+                            displayText = "⊘";  // Ký hiệu cấm
+                            typeSymbol = "SKIP";
+                            break;
+                        case REVERSE:
+                            displayText = "⤸";  // Mũi tên đảo chiều
+                            typeSymbol = "REV";
+                            break;
+                        case DRAW_TWO:
+                            displayText = "+2";
+                            typeSymbol = "RÚT 2";
+                            break;
+                        case WILD:
+                            displayText = "★";  // Ngôi sao cho Wild
+                            typeSymbol = "ĐỔI MÀU";
+                            break;
+                        case WILD_DRAW_FOUR:
+                            displayText = "+4";
+                            typeSymbol = "ĐỔI & +4";
+                            break;
+                        default:
+                            displayText = "?";
+                            break;
+                    }
+                }
+                FontMetrics fm = g2.getFontMetrics();
+                int textWidth = fm.stringWidth(displayText);
+                int textHeight = fm.getAscent();
+                
+                // Center the main symbol/number
+                int x = (width - textWidth) / 2;
+                int y = (height + textHeight) / 2 - 10;
+                
+                g2.drawString(displayText, x, y);
+                
+                // Vẽ tên loại lá bài phía dưới (nếu không phải số)
+                if (card.getType() != CardType.NUMBER && !typeSymbol.isEmpty()) {
+                    g2.setFont(new Font("Arial", Font.BOLD, 9));
+                    FontMetrics fmSmall = g2.getFontMetrics();
+                    int typeWidth = fmSmall.stringWidth(typeSymbol);
+                    int typeX = (width - typeWidth) / 2;
+                    g2.drawString(typeSymbol, typeX, height - 15);
+                }
+                
+                // Vẽ biểu tượng màu ở góc trên bên trái
+                g2.setFont(new Font("Arial", Font.PLAIN, 16));
+                g2.drawString(colorSymbol, 3, 20);
+                
+                // Draw corner symbols for better visual balance
+                g2.setFont(new Font("Arial", Font.BOLD, 12));
+                g2.drawString(displayText, 5, 15);
+                
+                // Rotate and draw bottom-right corner
+                g2.rotate(Math.PI, width/2.0, height/2.0);
+                g2.drawString(displayText, 5, 15);
+                
+                g2.dispose();
+            }
+        };
+        
         cardButton.setPreferredSize(new Dimension(85, 130));
-        
-        // FIX: Cải thiện màu sắc cho lá bài dễ nhìn hơn
-        switch (card.getColor()) {
-            case RED:
-                cardButton.setBackground(new Color(220, 20, 60)); // Crimson red
-                cardButton.setForeground(Color.WHITE);
-                break;
-            case GREEN:
-                cardButton.setBackground(new Color(34, 139, 34)); // Forest green
-                cardButton.setForeground(Color.WHITE);
-                break;
-            case BLUE:
-                cardButton.setBackground(new Color(30, 144, 255)); // Dodger blue
-                cardButton.setForeground(Color.WHITE);
-                break;
-            case YELLOW:
-                cardButton.setBackground(new Color(255, 215, 0)); // Gold
-                cardButton.setForeground(Color.BLACK);
-                break;
-            default:
-                cardButton.setBackground(new Color(47, 79, 79)); // Dark slate gray
-                cardButton.setForeground(Color.WHITE);
-                break;
-        }
-        
-        // Hiển thị giá trị/loại lá bài
-        String cardText;
-        if (card.getType() == CardType.NUMBER) {
-            cardText = String.valueOf(card.getValue());
-        } else {
-            cardText = getDisplayTextForCardType(card.getType());
-        }
-        
-        // FIX: Thiết kế lá bài đẹp và hiện đại
-        cardButton.setText("<html><center><div style='font-family:Arial; font-size:14pt; font-weight:bold;'>" + 
-                          cardText + "</div></center></html>");
-        
-        // Viền đẹp cho lá bài
-        cardButton.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.WHITE, 2),
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 1)
-            ),
-            BorderFactory.createEmptyBorder(6, 6, 6, 6)
-        ));
-        
-        // Làm cho lá bài có góc bo tròn hơn
+        cardButton.setOpaque(false);
+        cardButton.setContentAreaFilled(false);
+        cardButton.setBorderPainted(false);
         cardButton.setFocusPainted(false);
-        cardButton.setBorderPainted(true);
         
-        // Hiệu ứng hover đẹp hơn
+        // Thêm tooltip giải thích cho từng loại lá bài
+        String tooltip = getCardTooltip(card);
+        cardButton.setToolTipText(tooltip);
+        
+        // Simple hover effect for clean design
         cardButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 if (cardButton.isEnabled()) {
-                    cardButton.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(new Color(255, 215, 0), 3), // Gold
-                            BorderFactory.createLineBorder(Color.DARK_GRAY, 1)
-                        ),
-                        BorderFactory.createEmptyBorder(5, 5, 5, 5)
-                    ));
-                    // Hiệu ứng phóng to nhẹ
-                    cardButton.setPreferredSize(new Dimension(87, 132));
+                    // Slight scale up effect
+                    cardButton.setPreferredSize(new Dimension(90, 135));
                     cardButton.revalidate();
+                    cardButton.repaint();
                 }
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                cardButton.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.WHITE, 2),
-                        BorderFactory.createLineBorder(Color.DARK_GRAY, 1)
-                    ),
-                    BorderFactory.createEmptyBorder(6, 6, 6, 6)
-                ));
+                // Return to normal size
                 cardButton.setPreferredSize(new Dimension(85, 130));
                 cardButton.revalidate();
+                cardButton.repaint();
             }
         });
         return cardButton;
     }
     
     /**
-     * Cập nhật hiển thị lá bài trên cùng
+     * Hiển thị hướng dẫn ngắn gọn cho người chơi mới
      */
-    private void updateTopCard() {
-        if (topCard != null) {
-            // FIX: Cải thiện màu sắc cho lá bài trên cùng
-            switch (topCard.getColor()) {
-                case RED:
-                    topCardLabel.setBackground(new Color(220, 20, 60)); // Crimson red
-                    topCardLabel.setForeground(Color.WHITE);
-                    break;
-                case GREEN:
-                    topCardLabel.setBackground(new Color(34, 139, 34)); // Forest green
-                    topCardLabel.setForeground(Color.WHITE);
-                    break;
-                case BLUE:
-                    topCardLabel.setBackground(new Color(30, 144, 255)); // Dodger blue
-                    topCardLabel.setForeground(Color.WHITE);
-                    break;
-                case YELLOW:
-                    topCardLabel.setBackground(new Color(255, 215, 0)); // Gold
-                    topCardLabel.setForeground(Color.BLACK);
-                    break;
-                default:
-                    topCardLabel.setBackground(new Color(47, 79, 79)); // Dark slate gray
-                    topCardLabel.setForeground(Color.WHITE);
-                    break;
-            }
-            
-            // Hiển thị giá trị/loại lá bài
-            String cardText;
-            if (topCard.getType() == CardType.NUMBER) {
-                cardText = String.valueOf(topCard.getValue());
-            } else {
-                cardText = getDisplayTextForCardType(topCard.getType());
-            }
-            
-            topCardLabel.setText("<html><center><div style='font-family:Arial; font-weight:bold;'>" + 
-                                topCard.getColor().getDisplayName() + "<br><br>" + 
-                                "<span style='font-size:20pt;'>" + cardText + "</span></div></center></html>");
-        } else {
-            topCardLabel.setText("Chưa có lá bài");
-            topCardLabel.setOpaque(false);
-            topCardLabel.setBackground(null);
-            topCardLabel.setForeground(Color.BLACK);
+    private void showGameInstructions() {
+        String instructions = "<html><div style='width: 400px;'>" +
+                "<h2>🎮 HƯỚNG DẪN CHƠI UNO</h2>" +
+                "<h3>🎯 Mục tiêu:</h3>" +
+                "<p>Đánh hết lá bài trên tay để thắng!</p>" +
+                
+                "<h3>📋 Luật cơ bản:</h3>" +
+                "<p>• Đánh lá bài <b>cùng màu</b> hoặc <b>cùng số/ký hiệu</b> với lá trên cùng</p>" +
+                "<p>• Lá <b>Đổi màu (★)</b> và <b>+4</b> có thể đánh bất kỳ lúc nào</p>" +
+                "<p>• Khi còn 2 lá, nhấn <b>'UNO'</b> để tuyên bố</p>" +
+                
+                "<h3>🃏 Lá đặc biệt:</h3>" +
+                "<p>⊘ <b>Bỏ lượt:</b> Người kế tiếp mất lượt</p>" +
+                "<p>⤸ <b>Đảo chiều:</b> Thay đổi chiều chơi</p>" +
+                "<p>+2 <b>Rút 2:</b> Người kế tiếp rút 2 lá và mất lượt</p>" +
+                "<p>★ <b>Đổi màu:</b> Chọn màu tiếp theo</p>" +
+                "<p>+4 <b>Đổi màu +4:</b> Chọn màu + người kế tiếp rút 4 lá</p>" +
+                
+                "<h3>💡 Mẹo:</h3>" +
+                "<p>• Di chuột qua lá bài để xem chi tiết</p>" +
+                "<p>• Màu sắc và biểu tượng giúp dễ phân biệt</p>" +
+                "</div></html>";
+        
+        JOptionPane.showMessageDialog(this, instructions, "Hướng dẫn UNO", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    /**
+     * Lấy tên màu hiển thị bằng tiếng Việt
+     * 
+     * @param color Màu lá bài
+     * @return Tên màu bằng tiếng Việt
+     */
+    private String getColorDisplayName(CardColor color) {
+        switch (color) {
+            case RED:
+                return "ĐỎ";
+            case GREEN:
+                return "XANH LÁ";
+            case BLUE:
+                return "XANH DƯƠNG";
+            case YELLOW:
+                return "VÀNG";
+            default:
+                return "ĐEN";
         }
     }
     
     /**
-     * Lấy text hiển thị cho từng loại lá bài
+     * Lấy tooltip giải thích cho từng loại lá bài
      * 
-     * @param cardType Loại lá bài
-     * @return Text hiển thị
+     * @param card Lá bài
+     * @return Chú thích giải thích
      */
-    private String getDisplayTextForCardType(CardType cardType) {
-        switch (cardType) {
-            case SKIP:
-                return "Bỏ lượt";
-            case REVERSE:
-                return "Đảo chiều";
-            case DRAW_TWO:
-                return "+2";
-            case WILD:
-                return "Đổi màu";
-            case WILD_DRAW_FOUR:
-                return "+4";
-            default:
-                return "";
+    private String getCardTooltip(Card card) {
+        String colorName = getColorDisplayName(card.getColor());
+        
+        if (card.getType() == CardType.NUMBER) {
+            return "<html><b>Lá số " + card.getValue() + " màu " + colorName + "</b><br>" +
+                   "Có thể đánh khi lá trên cùng cùng số hoặc cùng màu</html>";
+        } else {
+            switch (card.getType()) {
+                case SKIP:
+                    return "<html><b>Lá Bỏ Lượt màu " + colorName + "</b><br>" +
+                           "Người chơi kế tiếp sẽ bị mất lượt chơi<br>" +
+                           "Có thể đánh khi lá trên cùng cùng màu hoặc cũng là lá Bỏ Lượt</html>";
+                case REVERSE:
+                    return "<html><b>Lá Đảo Chiều màu " + colorName + "</b><br>" +
+                           "Thay đổi chiều chơi (thuận ↔ ngược)<br>" +
+                           "Có thể đánh khi lá trên cùng cùng màu hoặc cũng là lá Đảo Chiều</html>";
+                case DRAW_TWO:
+                    return "<html><b>Lá Rút 2 màu " + colorName + "</b><br>" +
+                           "Người chơi kế tiếp phải rút 2 lá và mất lượt<br>" +
+                           "Có thể đánh khi lá trên cùng cùng màu hoặc cũng là lá Rút 2</html>";
+                case WILD:
+                    return "<html><b>Lá Đổi Màu</b><br>" +
+                           "Có thể đánh bất kỳ lúc nào<br>" +
+                           "Cho phép bạn chọn màu tiếp theo</html>";
+                case WILD_DRAW_FOUR:
+                    return "<html><b>Lá Đổi Màu +4</b><br>" +
+                           "Chỉ đánh khi không có lá nào cùng màu với lá trên cùng<br>" +
+                           "Người chơi kế tiếp có thể thách thức nếu nghi ngờ<br>" +
+                           "Nếu hợp lệ: người kế tiếp rút 4 lá và mất lượt<br>" +
+                           "Nếu thách thức thành công: bạn rút 4 lá</html>";
+                default:
+                    return "Lá bài đặc biệt";
+            }
         }
     }
+    
+    /**
+     * Updates the display of the top card with clean, modern design
+     */
+    private void updateTopCard() {
+        if (topCard != null) {
+            // Clean background colors
+            Color bgColor;
+            switch (topCard.getColor()) {
+                case RED:
+                    bgColor = new Color(220, 53, 69);
+                    break;
+                case GREEN:
+                    bgColor = new Color(40, 167, 69);
+                    break;
+                case BLUE:
+                    bgColor = new Color(0, 123, 255);
+                    break;
+                case YELLOW:
+                    bgColor = new Color(255, 193, 7);
+                    break;
+                default:
+                    bgColor = new Color(52, 58, 64);
+                    break;
+            }
+            
+            topCardLabel.setBackground(bgColor);
+            topCardLabel.setForeground(Color.WHITE);
+            topCardLabel.setOpaque(true);
+            
+            // Hiển thị rõ ràng hơn cho lá bài trên cùng
+            String displayText;
+            String cardDescription = "";
+            
+            if (topCard.getType() == CardType.NUMBER) {
+                displayText = "<html><div style='text-align: center;'><font size='6'>" + 
+                             topCard.getValue() + "</font><br><font size='3'>" + 
+                             getColorDisplayName(topCard.getColor()) + "</font></div></html>";
+            } else {
+                String symbol = "";
+                switch (topCard.getType()) {
+                    case SKIP:
+                        symbol = "⊘";
+                        cardDescription = "BỎ LƯỢT";
+                        break;
+                    case REVERSE:
+                        symbol = "⤸";
+                        cardDescription = "ĐẢO CHIỀU";
+                        break;
+                    case DRAW_TWO:
+                        symbol = "+2";
+                        cardDescription = "RÚT 2 LÁ";
+                        break;
+                    case WILD:
+                        symbol = "★";
+                        cardDescription = "ĐỔI MÀU";
+                        break;
+                    case WILD_DRAW_FOUR:
+                        symbol = "+4";
+                        cardDescription = "ĐỔI MÀU & RÚT 4";
+                        break;
+                    default:
+                        symbol = "?";
+                        cardDescription = "KHÔNG RÕ";
+                        break;
+                }
+                
+                displayText = "<html><div style='text-align: center;'><font size='6'>" + 
+                             symbol + "</font><br><font size='2'>" + 
+                             cardDescription + "</font><br><font size='3'>" + 
+                             getColorDisplayName(topCard.getColor()) + "</font></div></html>";
+            }
+            
+            topCardLabel.setText(displayText);
+            
+            // Clean rounded border
+            topCardLabel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.WHITE, 3),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            ));
+        } else {
+            topCardLabel.setText("No Card");
+            topCardLabel.setOpaque(false);
+            topCardLabel.setBackground(null);
+            topCardLabel.setForeground(Color.BLACK);
+            topCardLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
+        }
+    }
+    
+
     
     /**
      * Hiển thị dialog chọn màu cho lá Wild
@@ -747,13 +904,13 @@ public class GameGUI extends JFrame {
      */
     private CardColor showColorSelectionDialog() {
         Object[] options = {
-            "Đỏ", "Xanh lá", "Xanh dương", "Vàng"
+            "Red", "Green", "Blue", "Yellow"
         };
         
         int choice = JOptionPane.showOptionDialog(
             this,
-            "Chọn màu cho lá Wild:",
-            "Chọn màu",
+            "Choose color for Wild card:",
+            "Select Color",
             JOptionPane.DEFAULT_OPTION,
             JOptionPane.QUESTION_MESSAGE,
             null,
@@ -783,5 +940,34 @@ public class GameGUI extends JFrame {
     public void addChatMessage(String message) {
         chatArea.append(message + "\n");
         chatArea.setCaretPosition(chatArea.getDocument().getLength());
+    }
+    
+    /**
+     * Creates a clean, modern button with consistent styling
+     */
+    private JButton createCleanButton(String text, Color backgroundColor, Color textColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setPreferredSize(new Dimension(120, 40));
+        button.setBackground(backgroundColor);
+        button.setForeground(textColor);
+        button.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setOpaque(true);
+        
+        // Hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                if (button.isEnabled()) {
+                    button.setBackground(backgroundColor.darker());
+                }
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(backgroundColor);
+            }
+        });
+        
+        return button;
     }
 }
