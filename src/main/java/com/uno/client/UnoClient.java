@@ -51,14 +51,14 @@ public class UnoClient implements Runnable {
      */
     public boolean connect(String playerName) {
         try {
-            System.out.println(StringUtils.formatNetworkLog("UnoClient", "ket_noi", 
-                    "Dang ket noi den server " + serverAddress + ":" + serverPort));
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "SOCKET_INIT", 
+                    "Khoi tao ket noi socket TCP den " + serverAddress + ":" + serverPort));
                     
             socket = new Socket(serverAddress, serverPort);
             
             // Initialize input/output streams
-            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
-                    "Thiết lập luồng I/O"));
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "CONNECT", 
+                    "Khoi tao luong I/O - ObjectOutputStream/ObjectInputStream"));
                     
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
@@ -68,21 +68,21 @@ public class UnoClient implements Runnable {
             running = true;
             new Thread(this).start();
             
-            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
-                    "Thread xử lý tin nhắn đã khởi động"));
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "THREAD", 
+                    "Thread doc du lieu song song da khoi dong - Asynchronous network communication"));
             
             // Send connection message to server
             Message connectMessage = new Message(MessageType.CONNECT, playerName, "");
             sendMessage(connectMessage);
             
-            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
-                    "Kết nối thành công, gửi tin CONNECT"));
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "HANDSHAKE", 
+                    "TCP handshake hoan tat, gui goi tin CONNECT dau tien"));
             
             return true;
         } catch (IOException e) {
-            System.out.println(StringUtils.formatNetworkLog("UnoClient", "kết_nối", 
-                    "Lỗi kết nối: " + e.getMessage()));
-            clientListener.onConnectionError("Không thể kết nối đến server: " + e.getMessage());
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "CONNECTION_ERROR", 
+                    "TCP connection failure: " + e.getMessage()));
+            clientListener.onConnectionError("Khong the ket noi den server: " + e.getMessage());
             return false;
         }
     }
@@ -92,8 +92,8 @@ public class UnoClient implements Runnable {
      */
     public void disconnect() {
         if (running) {
-            System.out.println(StringUtils.formatNetworkLog("UnoClient", "ngắt_kết_nối", 
-                    "Đang ngắt kết nối khỏi server"));
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "DISCONNECT", 
+                    "Bat dau qua trinh dong ket noi - Connection teardown initiated"));
                     
             running = false;
             
@@ -112,17 +112,17 @@ public class UnoClient implements Runnable {
                 
                 if (socket != null) {
                     socket.close();
-                    System.out.println(StringUtils.formatNetworkLog("UnoClient", "đóng_socket", 
-                            "Socket đã đóng"));
+                    System.out.println(StringUtils.formatNetworkLog("CLIENT", "SOCKET_CLOSE", 
+                            "Socket da dong hoan tat - TCP connection terminated"));
                 }
             } catch (IOException e) {
-                System.out.println(StringUtils.formatNetworkLog("UnoClient", "ngắt_kết_nối", 
-                        "Lỗi đóng kết nối: " + e.getMessage()));
+                System.out.println(StringUtils.formatNetworkLog("CLIENT", "CLEANUP_ERROR", 
+                        "Loi khi dong resources: " + e.getMessage()));
             }
             
             clientListener.onDisconnected();
-            System.out.println(StringUtils.formatNetworkLog("UnoClient", "ngắt_kết_nối", 
-                    "Ngắt kết nối hoàn tất"));
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "DISCONNECT_COMPLETE", 
+                    "Qua trinh dong ket noi da hoan tat - Network resources released"));
         }
     }
     
@@ -134,37 +134,42 @@ public class UnoClient implements Runnable {
     public void sendMessage(Message message) {
         if (output != null) {
             try {
-                System.out.println(StringUtils.formatNetworkLog("UnoClient", "gửi_tin", 
-                        "Gửi tin nhắn: " + message.getType()));
+                System.out.println(StringUtils.formatNetworkLog("CLIENT", "SEND_MESSAGE", 
+                        "Gui du lieu qua TCP stream: " + message.getType() + " - Data serialization"));
                 output.writeObject(message);
                 output.flush();
             } catch (IOException e) {
-                System.out.println(StringUtils.formatNetworkLog("UnoClient", "gửi_tin", 
-                        "Lỗi gửi tin nhắn: " + e.getMessage()));
+                System.out.println(StringUtils.formatNetworkLog("CLIENT", "SEND_ERROR", 
+                        "Loi khi truyen du lieu qua network: " + e.getMessage() + " - TCP transmission failure"));
                 if (running) {
                     running = false;
-                    clientListener.onConnectionError("Mất kết nối đến server: " + e.getMessage());
+                    clientListener.onConnectionError("Mat ket noi den server: " + e.getMessage());
                 }
             }
         }
     }
     
     /**
-     * Thread xử lý tin nhắn từ server
+     * Thread xu ly tin nhan tu server
      */
     @Override
     public void run() {
         try {
+            System.out.println(StringUtils.formatNetworkLog("CLIENT", "LISTEN", 
+                    "Thread dang lang nghe du lieu tu Socket - Continuous blocking read operation"));
             while (running) {
                 Message message = (Message) input.readObject();
                 messageQueue.offer(message);
+                System.out.println(StringUtils.formatNetworkLog("CLIENT", "RECEIVE", 
+                        "Nhan goi tin tu server: " + message.getType() + " - Object deserialization"));
                 handleMessage(message);
             }
         } catch (IOException | ClassNotFoundException e) {
             if (running) {
                 running = false;
-                System.out.println("Lỗi khi đọc tin nhắn từ server: " + e.getMessage());
-                clientListener.onConnectionError("Mất kết nối với server: " + e.getMessage());
+                System.out.println(StringUtils.formatNetworkLog("CLIENT", "CONNECTION_LOST", 
+                        "Socket read error: " + e.getMessage() + " - Connection failure detection"));
+                clientListener.onConnectionError("Mat ket noi voi server: " + e.getMessage());
             }
         }
     }
@@ -201,16 +206,18 @@ public class UnoClient implements Runnable {
                 break;
                 
             case GAME_UPDATE:
-                System.out.println("UnoClient: Nhận GAME_UPDATE, data class: " + (message.getData() != null ? message.getData().getClass().getName() : "null"));
+                System.out.println(StringUtils.formatNetworkLog("CLIENT", "GAME_DATA", 
+                        "Nhan object class: " + (message.getData() != null ? message.getData().getClass().getName() : "null") + " - Object type detection"));
                 
                 if (message.getData() instanceof GameRoom.GameState) {
                     GameRoom.GameState state = (GameRoom.GameState) message.getData();
-                    System.out.println("UnoClient: GameState nhận được có currentPlayerId = " + state.getCurrentPlayerId());
-                    System.out.println("UnoClient: clientId hiện tại = " + clientId);
-                    System.out.println("UnoClient: Giống nhau? " + 
-                                     (state.getCurrentPlayerId() != null && 
-                                      clientId != null && 
-                                      state.getCurrentPlayerId().equals(clientId)));
+                    System.out.println(StringUtils.formatNetworkLog("CLIENT", "STATE_VALIDATION", 
+                        "GameState currentPlayerId = " + state.getCurrentPlayerId() + ", local clientId = " + clientId));
+                    System.out.println(StringUtils.formatNetworkLog("CLIENT", "STATE_COMPARISON", 
+                        "ID comparison result: " + (state.getCurrentPlayerId() != null && 
+                                                  clientId != null && 
+                                                  state.getCurrentPlayerId().equals(clientId)) + 
+                        " - State synchronization verification"));
                 }
                 
                 clientListener.onGameUpdated(message.getData());
@@ -233,7 +240,8 @@ public class UnoClient implements Runnable {
                 break;
                 
             default:
-                System.out.println("Loại tin nhắn không được hỗ trợ: " + message.getType());
+                System.out.println(StringUtils.formatNetworkLog("CLIENT", "UNSUPPORTED_MESSAGE", 
+                        "Loai tin nhan khong duoc ho tro: " + message.getType() + " - Protocol violation"));
                 break;
         }
     }

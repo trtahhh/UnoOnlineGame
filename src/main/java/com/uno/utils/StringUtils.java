@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Utility class for string operations and logging
+ * Utility class for string operations and network logging
  */
 public class StringUtils {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -25,27 +25,29 @@ public class StringUtils {
     /**
      * Creates a formatted log message with timestamp
      * 
-     * @param source Source of the log (class or component name)
+     * @param logType Type of log (NETWORK, TCP, UDP, etc)
      * @param message Message to log
      * @return Formatted log message with timestamp
      */
-    public static String formatLogMessage(String source, String message) {
+    public static String formatLogMessage(String logType, String message) {
         return String.format("[%s][%s] %s", 
                 DATE_FORMAT.format(new Date()), 
-                source, 
+                logType, 
                 message);
     }
     
     /**
-     * Formats network-related log messages in Vietnamese with accents
+     * Formats network-related log messages in Vietnamese without accents
+     * Focuses on highlighting networking concepts
      * 
-     * @param className Class name generating the log
-     * @param methodName Method name generating the log
-     * @param message Message to log
+     * @param component Component name (CLIENT, SERVER, SOCKET, etc)
+     * @param operation Network operation (CONNECT, SEND, RECEIVE, etc)
+     * @param message Detailed message about the operation
      * @return Formatted log message for network operations
      */
-    public static String formatNetworkLog(String className, String methodName, String message) {
-        return formatLogMessage("MẠNG", 
-                String.format("%s.%s: %s", className, methodName, message));
+    public static String formatNetworkLog(String component, String operation, String message) {
+        // Simplified log format focusing on network operations
+        return formatLogMessage("NETWORK", 
+                String.format("%s | %s | %s", component, operation, message));
     }
 }

@@ -29,25 +29,47 @@ src/
 - Java JDK 17 trở lên
 - Kết nối mạng LAN hoặc Internet
 
-## Hiển thị tiếng Việt có dấu trong log
+## Hiểu biết về Lập trình mạng
 
-Để hiển thị đúng tiếng Việt có dấu trong log của game, bạn cần:
+Dự án này triển khai các khái niệm lập trình mạng quan trọng sau:
 
-1. Chạy server và client với tham số `-Dfile.encoding=UTF-8`:
-   ```
-   java -Dfile.encoding=UTF-8 -cp target/classes com.uno.server.UnoServer
-   java -Dfile.encoding=UTF-8 -cp target/classes com.uno.client.UnoClientMain
-   ```
+1. **Mô hình Client-Server**: Sử dụng giao tiếp mạng qua Socket để kết nối nhiều người chơi.
+2. **Xử lý đồng thời**: Sử dụng multi-threading để xử lý nhiều kết nối client cùng lúc.
+3. **Giao thức truyền tin**: Tự thiết kế giao thức ứng dụng với các loại tin nhắn được định nghĩa qua enum MessageType.
+4. **Serialization**: Truyền và nhận các đối tượng Java qua mạng bằng ObjectOutputStream/ObjectInputStream.
+5. **Xử lý sự kiện bất đồng bộ**: Sử dụng listeners và callbacks để xử lý các sự kiện mạng.
 
-2. Nếu sử dụng PowerShell, hãy cài đặt encoding UTF-8:
-   ```powershell
-   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-   ```
+## Hệ thống log
 
-3. Nếu sử dụng Command Prompt (cmd), hãy đổi code page:
-   ```
-   chcp 65001
-   ```
+Game sử dụng hệ thống log được thiết kế đặc biệt để hiển thị các hoạt động mạng với định dạng dễ hiểu:
+
+```
+[COMPONENT][OPERATION] Message
+```
+
+Ví dụ:
+- `[SERVER][ACCEPT_CONNECTION] Ket noi TCP moi tu client: 127.0.0.1:1234 - Connection accept event`
+- `[CLIENT][SOCKET_INIT] Khoi tao ket noi socket TCP den localhost:5000`
+
+Log được thiết kế để:
+1. Sử dụng tiếng Việt không dấu cho dễ đọc
+2. Mỗi log bao gồm chi tiết kỹ thuật mạng để hiểu rõ hơn
+3. Dùng tiếng Anh cho các thuật ngữ lập trình mạng chuyên ngành
+
+## Chạy ứng dụng
+
+Bạn có thể chạy ứng dụng bằng cách sử dụng các task có sẵn trong VS Code:
+
+1. Chạy Server: `Chạy Server với UTF-8`
+2. Chạy Client: `Chạy Client với UTF-8`
+
+Hoặc sử dụng script PowerShell:
+
+```powershell
+./test-uno-game.ps1
+```
+
+Script này sẽ tự động cài đặt encoding UTF-8 và chạy cả server và client.
 
 4. Nếu vẫn gặp vấn đề với font chữ, hãy đảm bảo console của bạn đang sử dụng font hỗ trợ Unicode như Consolas hoặc Lucida Console.
 

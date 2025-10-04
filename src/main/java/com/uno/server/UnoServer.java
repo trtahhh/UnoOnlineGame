@@ -51,16 +51,17 @@ public class UnoServer {
             serverSocket = new ServerSocket(port);
             running = true;
             
-            System.out.println(StringUtils.formatNetworkLog("UnoServer", "start", 
-                    "Khoi tao server thanh cong tren cong " + port));
+            System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "STARTUP", 
+                    "Khoi tao TCP server socket tren port " + port + " - Server socket initialization"));
             
             // Wait for client connections
             while (running) {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     String clientAddress = clientSocket.getInetAddress().getHostAddress();
-                    System.out.println(StringUtils.formatNetworkLog("UnoServer", "accept", 
-                            "Ket noi moi tu client: " + clientAddress + ":" + clientSocket.getPort()));
+                    System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "ACCEPT_CONNECTION", 
+                            "Ket noi TCP moi tu client: " + clientAddress + ":" + clientSocket.getPort() + 
+                            " - Connection accept event"));
                     
                     // Create and start handler for client
                     ClientHandler clientHandler = new ClientHandler(clientSocket, this);
@@ -68,14 +69,14 @@ public class UnoServer {
                     clientThreadPool.execute(clientHandler);
                 } catch (IOException e) {
                     if (running) {
-                        System.out.println(StringUtils.formatNetworkLog("UnoServer", "accept", 
-                                "Loi khi chap nhan ket noi: " + e.getMessage()));
+                        System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "ACCEPT_ERROR", 
+                                "Loi khi xu ly accept() operation: " + e.getMessage() + " - Socket accept failure"));
                     }
                 }
             }
         } catch (IOException e) {
-            System.out.println(StringUtils.formatNetworkLog("UnoServer", "start", 
-                    "Loi khoi tao server: " + e.getMessage()));
+            System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "STARTUP_ERROR", 
+                    "Loi khoi tao server socket: " + e.getMessage() + " - Socket bind failure"));
         } finally {
             stop();
         }
@@ -87,8 +88,8 @@ public class UnoServer {
     public void stop() {
         running = false;
         
-        System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
-                "Dang dung server..."));
+        System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "SHUTDOWN", 
+                "Bat dau qua trinh dong server - Server shutdown initiated"));
         
         // Close all client connections
         int closedConnections = 0;
@@ -96,28 +97,29 @@ public class UnoServer {
             client.close();
             closedConnections++;
         }
-        System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
-                "Da dong " + closedConnections + " ket noi client"));
+        System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "CONNECTION_CLEANUP", 
+                "Da dong " + closedConnections + " ket noi client - Client socket cleanup"));
         clients.clear();
         
         // Shut down thread pool
         clientThreadPool.shutdown();
-        System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
-                "Thread pool da shutdown"));
+        System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "THREAD_CLEANUP", 
+                "Thread pool da shutdown - Resource cleanup"));
         
         // Close server socket
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
-                System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
-                        "Server socket da dong"));
+                System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "SOCKET_CLOSE", 
+                        "Server socket da dong - Main listening socket closed"));
             }
         } catch (IOException e) {
-            System.out.println(StringUtils.formatNetworkLog("UnoServer", "stop", 
-                    "Loi dong server socket: " + e.getMessage()));
+            System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "SOCKET_CLOSE_ERROR", 
+                    "Loi dong server socket: " + e.getMessage() + " - Socket shutdown error"));
         }
         
-        System.out.println("Server đã dừng");
+        System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "SHUTDOWN_COMPLETE", 
+                "Server da dung hoan toan - All resources released"));
     }
     
     /**
@@ -257,7 +259,8 @@ public class UnoServer {
             try {
                 port = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
-                System.out.println("Cổng không hợp lệ, sử dụng cổng mặc định: " + DEFAULT_PORT);
+                System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "CONFIG_ERROR", 
+                        "Cong khong hop le, su dung cong mac dinh: " + DEFAULT_PORT));
             }
         }
         

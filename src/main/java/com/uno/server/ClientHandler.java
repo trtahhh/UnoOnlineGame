@@ -31,32 +31,34 @@ public class ClientHandler implements Runnable {
         this.server = server;
         this.running = true;
         
-        System.out.println(StringUtils.formatNetworkLog("ClientHandler", "constructor", 
-                "Tạo handler cho client " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort()));
+        System.out.println(StringUtils.formatNetworkLog("SERVER", "NEW_CONNECTION", 
+                "Tao handler xu ly client " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort() + 
+                " - Connection established"));
     }
     
     @Override
     public void run() {
         try {
             // Initialize input/output streams
-            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "run", 
-                    "Thiết lập luồng I/O cho client " + clientSocket.getInetAddress().getHostAddress()));
+            System.out.println(StringUtils.formatNetworkLog("SERVER", "STREAM_SETUP", 
+                    "Thiet lap stream I/O cho client " + clientSocket.getInetAddress().getHostAddress() + 
+                    " - Initializing ObjectInputStream/ObjectOutputStream"));
             output = new ObjectOutputStream(clientSocket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(clientSocket.getInputStream());
-            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "run", 
-                    "Luồng I/O đã sẵn sàng"));
+            System.out.println(StringUtils.formatNetworkLog("SERVER", "READY", 
+                    "Kenh truyen du lieu da san sang - Communication channel established"));
             
             // Process messages from client
             while (running) {
                 Message message = (Message) input.readObject();
-                System.out.println(StringUtils.formatNetworkLog("ClientHandler", "nhận_tin", 
-                        "Nhận tin nhắn: " + message.getType()));
+                System.out.println(StringUtils.formatNetworkLog("SERVER", "MESSAGE_RECEIVED", 
+                        "Nhan tin nhan tu client: " + message.getType() + " - Object deserialization"));
                 handleMessage(message);
             }
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "run", 
-                    "Lỗi kết nối: " + e.getMessage()));
+            System.out.println(StringUtils.formatNetworkLog("SERVER", "CONNECTION_ERROR", 
+                    "Loi ket noi voi client: " + e.getMessage() + " - Socket communication failure"));
         } finally {
             close();
         }
@@ -348,9 +350,9 @@ public class ClientHandler implements Runnable {
     public void sendMessage(Message message) {
         try {
             // Log network message transmission
-            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "gửi_tin", 
-                    "Gửi " + message.getType() + " đến " + 
-                    (player != null ? player.getName() : "client")));
+            System.out.println(StringUtils.formatNetworkLog("SERVER", "SEND_MESSAGE", 
+                    "Gui " + message.getType() + " den " + 
+                    (player != null ? player.getName() : "client") + " - Object serialization"));
             
             // Send message
             output.writeObject(message);
@@ -360,8 +362,8 @@ public class ClientHandler implements Runnable {
             output.reset(); 
             output.flush();
         } catch (IOException e) {
-            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "gửi_tin", 
-                    "Lỗi gửi tin nhắn: " + e.getMessage()));
+            System.out.println(StringUtils.formatNetworkLog("SERVER", "SEND_ERROR", 
+                    "Loi gui du lieu qua network: " + e.getMessage() + " - TCP transmission failure"));
             close();
         }
     }
@@ -375,8 +377,9 @@ public class ClientHandler implements Runnable {
             return;
         }
         
-        System.out.println(StringUtils.formatNetworkLog("ClientHandler", "dong_ket_noi", 
-                "Dong ket noi voi " + (player != null ? player.getName() : "client")));
+        System.out.println(StringUtils.formatNetworkLog("SERVER", "DISCONNECT", 
+                "Bat dau qua trinh dong ket noi voi client " + 
+                (player != null ? player.getName() : "anonymous") + " - Connection teardown initiated"));
                 
         try {
             running = false;
@@ -395,15 +398,16 @@ public class ClientHandler implements Runnable {
             
             if (clientSocket != null) {
                 clientSocket.close();
-                System.out.println(StringUtils.formatNetworkLog("ClientHandler", "dong_socket", 
-                        "Socket da dong: " + clientSocket.getInetAddress().getHostAddress()));
+                System.out.println(StringUtils.formatNetworkLog("SERVER", "SOCKET_CLOSE", 
+                        "Socket da dong hoan tat: " + clientSocket.getInetAddress().getHostAddress() + 
+                        " - TCP connection terminated"));
             }
             
             // Notify server about disconnection
             server.removeClient(this);
         } catch (IOException e) {
-            System.out.println(StringUtils.formatNetworkLog("ClientHandler", "dong_ket_noi", 
-                    "Loi dong ket noi: " + e.getMessage()));
+            System.out.println(StringUtils.formatNetworkLog("SERVER", "CLEANUP_ERROR", 
+                    "Loi khi dong resources: " + e.getMessage() + " - Resource cleanup failure"));
         }
     }
     
