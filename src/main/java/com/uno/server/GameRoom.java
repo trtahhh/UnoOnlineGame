@@ -33,6 +33,9 @@ public class GameRoom implements Serializable {
         this.clientHandlers = new HashMap<>();
         this.game = new Game();
         
+        // Room creation logging
+        System.out.println("[ROOM-" + id.substring(0, 3) + "] Room created | Max players: 4");
+        
         // Thêm host vào phòng
         this.players.put(host.getId(), host);
         this.clientHandlers.put(host.getId(), hostHandler);
@@ -67,6 +70,10 @@ public class GameRoom implements Serializable {
             players.put(player.getId(), player);
             clientHandlers.put(player.getId(), handler);
             game.addPlayer(player);
+            
+            // Player joined logging
+            System.out.println("[ROOM-" + id.substring(0, 3) + "] Player joined: " + player.getName() + 
+                             " (" + players.size() + "/4 players)");
             return true;
         }
         return false;
@@ -107,7 +114,11 @@ public class GameRoom implements Serializable {
      * @return true nếu bắt đầu thành công, ngược lại false
      */
     public boolean startGame() {
-        return players.size() >= 2 && game.startGame();
+        if (players.size() >= 2 && game.startGame()) {
+            System.out.println("[ROOM-" + id.substring(0, 3) + "] Game started with " + players.size() + " players");
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -239,9 +250,15 @@ public class GameRoom implements Serializable {
      * @param message Tin nhắn cần gửi
      */
     public void broadcast(Message message) {
+        long broadcastStart = System.currentTimeMillis();
+        System.out.println("[BROADCAST] Broadcasting " + message.getType() + " to " + clientHandlers.size() + " clients");
+        
         for (ClientHandler handler : clientHandlers.values()) {
             handler.sendMessage(message);
         }
+        
+        long broadcastTime = System.currentTimeMillis() - broadcastStart;
+        System.out.println("[BROADCAST] Broadcast completed in " + broadcastTime + "ms");
     }
     
     /**

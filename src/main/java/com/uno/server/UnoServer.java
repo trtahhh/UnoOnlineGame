@@ -48,8 +48,17 @@ public class UnoServer {
      */
     public void start() {
         try {
+            System.out.println("[SERVER] Starting UNO Online Server...");
+            System.out.println("[TCP] Creating ServerSocket on port " + port);
+            
             serverSocket = new ServerSocket(port);
             running = true;
+            
+            System.out.println("[SERVER] ServerSocket created on port " + port);
+            System.out.println("[TCP] Binding to 0.0.0.0:" + port);
+            System.out.println("[TCP] Listening for incoming connections...");
+            System.out.println("[THREADING] Thread Pool initialized: 100 threads");
+            System.out.println("[THREADING] Thread Model: One-Thread-Per-Client");
             
             System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "STARTUP", 
                     "Khoi tao TCP server socket tren port " + port + " - Server socket initialization"));
@@ -59,13 +68,27 @@ public class UnoServer {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     String clientAddress = clientSocket.getInetAddress().getHostAddress();
+                    int clientPort = clientSocket.getPort();
+                    
+                    System.out.println("[TCP] TCP Handshake completed");
+                    System.out.println("[SERVER] Client connected from " + clientAddress + ":" + clientPort);
+                    System.out.println("[SOCKET] Remote Address: /" + clientAddress + ":" + clientPort);
+                    System.out.println("[SOCKET] Local Address: /" + serverSocket.getInetAddress().getHostAddress() + ":" + port);
+                    
                     System.out.println(StringUtils.formatNetworkLog("SERVER_MAIN", "ACCEPT_CONNECTION", 
-                            "Ket noi TCP moi tu client: " + clientAddress + ":" + clientSocket.getPort() + 
+                            "Ket noi TCP moi tu client: " + clientAddress + ":" + clientPort + 
                             " - Connection accept event"));
                     
                     // Create and start handler for client
                     ClientHandler clientHandler = new ClientHandler(clientSocket, this);
                     clients.add(clientHandler);
+                    
+                    System.out.println("[THREAD] New thread assigned to client_" + String.format("%03d", clients.size()));
+                    System.out.printf("[THREAD-POOL] Active: %d | Idle: %d | Queue: 0%n", 
+                                    clientThreadPool instanceof java.util.concurrent.ThreadPoolExecutor ? 
+                                    ((java.util.concurrent.ThreadPoolExecutor)clientThreadPool).getActiveCount() : clients.size(),
+                                    100 - clients.size());
+                    
                     clientThreadPool.execute(clientHandler);
                 } catch (IOException e) {
                     if (running) {

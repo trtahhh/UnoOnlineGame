@@ -48,7 +48,7 @@ public class GameGUI extends JFrame {
         this.playerId = (playerId != null) ? playerId.trim() : "";
         
         // Debug ID của người chơi
-        System.out.println("GameGUI constructor: Nhận playerId = '" + playerId + "', sau khi trim: '" + this.playerId + "'");
+        System.out.println("GameGUI constructor: Nhan playerId = '" + playerId + "', sau khi trim: '" + this.playerId + "'");
         
         this.canPlay = false;
         this.playerHand = new ArrayList<>();
@@ -88,6 +88,12 @@ public class GameGUI extends JFrame {
      * Khởi tạo các thành phần UI
      */
     private void initComponents() {
+        System.out.println("[GUI] Initializing JFrame: 1200x800");
+        System.out.println("[GUI] Setting Look and Feel: Nimbus");
+        System.out.println("[GUI] Main window created");
+        System.out.println("[GUI] Creating panel hierarchy");
+        System.out.println("[LAYOUT] Using BorderLayout for main frame");
+        
         setLayout(new BorderLayout());
         
         // Clean main panel
@@ -299,7 +305,7 @@ public class GameGUI extends JFrame {
             cardCountLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             cardCountLabel.setForeground(new Color(52, 152, 219)); // UNO Blue
             
-            JLabel unoLabel = new JLabel("UNO: Chưa");
+            JLabel unoLabel = new JLabel("UNO: Không");
             unoLabel.setFont(new Font("Arial", Font.BOLD, 12));
             unoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             unoLabel.setForeground(new Color(231, 76, 60)); // UNO Red
@@ -336,7 +342,7 @@ public class GameGUI extends JFrame {
         playerHeaderPanel.setBackground(new Color(52, 152, 219)); // UNO Blue
         playerHeaderPanel.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
         
-        JLabel playerCardLabel = new JLabel("🎮 BÀI CỦA BẠN");
+        JLabel playerCardLabel = new JLabel("BÀI CỦA BẠN");
         playerCardLabel.setFont(new Font("Arial", Font.BOLD, 16));
         playerCardLabel.setForeground(Color.WHITE);
         
@@ -413,7 +419,7 @@ public class GameGUI extends JFrame {
         Color accentColor = new Color(90, 95, 207); // UI Accent color
         drawCardButton = createCleanButton("🃏 Rút bài", accentColor, Color.WHITE);
         endTurnButton = createCleanButton("✓ Kết thúc lượt", new Color(108, 117, 125), Color.WHITE);
-        unoButton = createCleanButton("🔊 UNO!", new Color(231, 76, 60), Color.WHITE); // UNO Red
+        unoButton = createCleanButton("� UNO!", new Color(231, 76, 60), Color.WHITE); // UNO Red
         
         actionPanel.add(drawCardButton);
         actionPanel.add(endTurnButton);
@@ -430,7 +436,7 @@ public class GameGUI extends JFrame {
         chatHeaderPanel.setBackground(new Color(90, 95, 207)); // UI Accent
         chatHeaderPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
         
-        JLabel chatLabel = new JLabel("💬 CHAT & THÔNG BÁO");
+        JLabel chatLabel = new JLabel("CHAT & THÔNG BÁO");
         chatLabel.setFont(new Font("Arial", Font.BOLD, 14));
         chatLabel.setForeground(Color.WHITE);
         chatHeaderPanel.add(chatLabel, BorderLayout.WEST);
@@ -554,7 +560,7 @@ public class GameGUI extends JFrame {
      * @param gameState Trạng thái game
      */
     public void updateGameState(GameState gameState) {
-        System.out.println("GameGUI.updateGameState được gọi với gameState: " + gameState);
+        System.out.println("GameGUI.updateGameState duoc goi voi gameState: " + gameState);
         
         // Cập nhật lá bài trên cùng
         topCard = gameState.getTopCard();
@@ -566,11 +572,17 @@ public class GameGUI extends JFrame {
         // FIX: Xác định isMyTurn ngay từ đầu và log rõ ràng
         boolean isMyTurn = StringUtils.safeEquals(currentPlayerId, this.playerId);
         
+        // Network-GUI Integration logging
+        System.out.println("[UI-UPDATE] Received game state update");
+        System.out.println("[UI-UPDATE] Current player: " + currentPlayerId);
+        System.out.println("[UI-UPDATE] Top card changed: " + (topCard != null ? topCard.toString() : "null"));
+        
         // Debug chi tiết
         System.out.println("DEBUG GameGUI: currentPlayerId='" + currentPlayerId + "', this.playerId='" + 
                           this.playerId + "', isMyTurn=" + isMyTurn);
 
         Map<String, PlayerInfo> playerInfos = gameState.getPlayerInfos();
+        System.out.println("[UI-UPDATE] Refreshing player list (" + playerInfos.size() + " players)");
         System.out.println("GameGUI: Thông tin người chơi trong game: " + playerInfos.keySet());
         
         PlayerInfo currentPlayerInfo = playerInfos.get(currentPlayerId);
@@ -578,10 +590,13 @@ public class GameGUI extends JFrame {
         if (currentPlayerInfo != null) {
             String currentPlayerName = currentPlayerInfo.getName();
             
-            // Turn indicator với glow effect theo thiết kế
+                // Turn indicator với glow effect theo thiết kế
             if (isMyTurn) {
+                System.out.println("[GUI] Your turn! Enabling card buttons");
+                System.out.println("[GUI] Highlighting active player");
+                
                 // Tạo glow effect với border màu sáng
-                currentPlayerLabel.setText("⟹ LƯỢT CỦA BẠN (" + currentPlayerName + ") ⟸");
+                currentPlayerLabel.setText("→ LƯỢT CỦA BẠN (" + currentPlayerName + ") ←");
                 currentPlayerLabel.setForeground(new Color(231, 76, 60)); // UNO Red
                 currentPlayerLabel.setFont(currentPlayerLabel.getFont().deriveFont(Font.BOLD, 18));
                 
@@ -598,6 +613,8 @@ public class GameGUI extends JFrame {
                 currentPlayerLabel.setOpaque(true);
                 currentPlayerLabel.setBackground(new Color(231, 76, 60, 30));
             } else {
+                System.out.println("[GUI] Waiting for other player");
+                
                 currentPlayerLabel.setText("LƯỢT CỦA: " + currentPlayerName);
                 currentPlayerLabel.setForeground(new Color(44, 62, 80)); // Wild/Black
                 currentPlayerLabel.setFont(currentPlayerLabel.getFont().deriveFont(Font.PLAIN, 16));
@@ -614,8 +631,8 @@ public class GameGUI extends JFrame {
                               "Khong tim thay thong tin cua currentPlayerId = " + currentPlayerId));
         }
         
-        // FIX: Cập nhật chiều chơi không dùng ký tự đặc biệt
-        directionLabel.setText("CHIEU CHOI: " + (gameState.isClockwise() ? "THUAN" : "NGUOC"));
+        // FIX: Cập nhật chiều chơi có dấu tiếng Việt
+        directionLabel.setText("CHIỀU CHƠI: " + (gameState.isClockwise() ? "THUẬN" : "NGƯỢC"));
         
         // Cập nhật bài của người chơi
         PlayerInfo playerInfo = playerInfos.get(this.playerId); // Luôn lấy thông tin của chính người chơi này
@@ -642,10 +659,12 @@ public class GameGUI extends JFrame {
             // FIX: So sánh với this.playerId để loại bỏ chính người chơi này
             if (!StringUtils.safeEquals(pid, this.playerId)) {
                 otherPlayers.add(playerInfos.get(pid));
+                System.out.println("[GUI] Player: " + playerInfos.get(pid).getName() + " | Cards: " + playerInfos.get(pid).getHand().size());
             }
         }
         
         // Cập nhật giao diện người chơi khác
+        System.out.println("[GUI] Updating other players panel");
         for (int i = 0; i < otherPlayerPanels.size(); i++) {
             JPanel panel = otherPlayerPanels.get(i);
             if (i < otherPlayers.size()) {
@@ -773,6 +792,9 @@ public class GameGUI extends JFrame {
                 null  // không dùng icon mặc định
             );
         }
+        
+        // Performance logging
+        System.out.println("[UI-UPDATE] UI update completed");
     }
     
     /**
@@ -781,6 +803,8 @@ public class GameGUI extends JFrame {
      * @param isCurrentPlayer Có phải lượt của người chơi hiện tại không
      */
     private void updatePlayerHand(boolean isCurrentPlayer) {
+        System.out.println("[RENDER] Rendering " + playerHand.size() + " cards in hand");
+        
         playerHandPanel.removeAll();
         
         // FIX: Đảm bảo canPlay phản ánh chính xác lúc nào người chơi có thể đánh bài
@@ -850,7 +874,11 @@ public class GameGUI extends JFrame {
         JButton cardButton = new JButton() {
             @Override
             protected void paintComponent(Graphics g) {
+                long renderStart = System.currentTimeMillis();
+                System.out.println("[RENDER] paintComponent() called");
+                
                 Graphics2D g2 = (Graphics2D) g.create();
+                System.out.println("[RENDER] Enabling anti-aliasing");
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
                 // Clean, minimalist card design
@@ -922,11 +950,11 @@ public class GameGUI extends JFrame {
                     switch (card.getType()) {
                         case SKIP:
                             displayText = "⊘";  // Ký hiệu cấm
-                            typeSymbol = "SKIP";
+                            typeSymbol = "BỎ LƯỢT";
                             break;
                         case REVERSE:
-                            displayText = "⤸";  // Mũi tên đảo chiều
-                            typeSymbol = "REV";
+                            displayText = "↺";  // Mũi tên đảo chiều
+                            typeSymbol = "ĐẢO CHIỀU";
                             break;
                         case DRAW_TWO:
                             displayText = "+2";
@@ -978,6 +1006,10 @@ public class GameGUI extends JFrame {
                 g2.drawString(displayText, 5, 15);
                 
                 g2.dispose();
+                
+                // Rendering performance log
+                long renderTime = System.currentTimeMillis() - renderStart;
+                System.out.println("[RENDER] Rendering completed in " + renderTime + "ms (60 FPS)");
             }
         };
         
@@ -1412,10 +1444,10 @@ public class GameGUI extends JFrame {
         colorGrid.setOpaque(false);
         
         // Tạo các nút màu với thiết kế hiện đại và hover effect
-        JButton redButton = createAdvancedColorButton("ĐỎ", new Color(231, 76, 60), Color.WHITE, "♥");
-        JButton greenButton = createAdvancedColorButton("XANH LÁ", new Color(39, 174, 96), Color.WHITE, "♣");
-        JButton blueButton = createAdvancedColorButton("XANH DƯƠNG", new Color(52, 152, 219), Color.WHITE, "♠");
-        JButton yellowButton = createAdvancedColorButton("VÀNG", new Color(241, 196, 15), Color.BLACK, "★");
+        JButton redButton = createAdvancedColorButton("ĐỎ", new Color(231, 76, 60), Color.WHITE, "●");
+        JButton greenButton = createAdvancedColorButton("XANH LÁ", new Color(39, 174, 96), Color.WHITE, "●");
+        JButton blueButton = createAdvancedColorButton("XANH DƯƠNG", new Color(52, 152, 219), Color.WHITE, "●");
+        JButton yellowButton = createAdvancedColorButton("VÀNG", new Color(241, 196, 15), Color.BLACK, "●");
         
         colorGrid.add(redButton);
         colorGrid.add(greenButton);

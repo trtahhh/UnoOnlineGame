@@ -176,7 +176,7 @@ public class UnoClientMain implements UnoClient.ClientListener {
         }
         
         // In thông tin về ID nhận được
-        System.out.println("UnoClientMain: Nhận ID từ server: '" + clientId + "', sau khi trim: '" + this.playerId + "'");
+        System.out.println("UnoClientMain: Nhan ID tu server: '" + clientId + "', sau khi trim: '" + this.playerId + "'");
         
         SwingUtilities.invokeLater(() -> {
             // Đóng màn hình đăng nhập và mở màn hình sảnh

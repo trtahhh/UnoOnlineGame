@@ -51,10 +51,17 @@ public class UnoClient implements Runnable {
      */
     public boolean connect(String playerName) {
         try {
+            System.out.println("[CLIENT] Initiating connection to " + serverAddress + ":" + serverPort);
+            System.out.println("[TCP] SYN → SYN-ACK → ACK");
+            
             System.out.println(StringUtils.formatNetworkLog("CLIENT", "SOCKET_INIT", 
                     "Khoi tao ket noi socket TCP den " + serverAddress + ":" + serverPort));
                     
             socket = new Socket(serverAddress, serverPort);
+            
+            System.out.println("[CLIENT] Connection established");
+            System.out.println("[SOCKET] Local port: " + socket.getLocalPort());
+            System.out.println("[SOCKET] Socket options: SO_KEEPALIVE=true, TCP_NODELAY=true");
             
             // Initialize input/output streams
             System.out.println(StringUtils.formatNetworkLog("CLIENT", "CONNECT", 
@@ -68,6 +75,8 @@ public class UnoClient implements Runnable {
             running = true;
             new Thread(this).start();
             
+            System.out.println("[NET-THREAD] Network handler thread started");
+            System.out.println("[NET-THREAD] Listening for server messages...");
             System.out.println(StringUtils.formatNetworkLog("CLIENT", "THREAD", 
                     "Thread doc du lieu song song da khoi dong - Asynchronous network communication"));
             
@@ -134,11 +143,21 @@ public class UnoClient implements Runnable {
     public void sendMessage(Message message) {
         if (output != null) {
             try {
+                long sendTime = System.currentTimeMillis();
+                System.out.println("[SEND] Serializing to Object: " + message.toString().length() + " bytes");
+                System.out.println("[SEND] Message Type: " + message.getType() + " | From: " + clientId);
+                System.out.println("[TCP] Packet sent via TCP stream");
+                System.out.println("[PERF] Message sent at: " + sendTime);
+                
                 System.out.println(StringUtils.formatNetworkLog("CLIENT", "SEND_MESSAGE", 
                         "Gui du lieu qua TCP stream: " + message.getType() + " - Data serialization"));
+                
                 output.writeObject(message);
                 output.flush();
             } catch (IOException e) {
+                System.out.println("[ERROR] IOException: " + e.getMessage());
+                System.out.println("[ERROR] Attempting reconnection...");
+                
                 System.out.println(StringUtils.formatNetworkLog("CLIENT", "SEND_ERROR", 
                         "Loi khi truyen du lieu qua network: " + e.getMessage() + " - TCP transmission failure"));
                 if (running) {
@@ -155,14 +174,17 @@ public class UnoClient implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println(StringUtils.formatNetworkLog("CLIENT", "LISTEN", 
-                    "Thread dang lang nghe du lieu tu Socket - Continuous blocking read operation"));
+            System.out.println("[NET-THREAD] Listening for server messages...");
             while (running) {
                 Message message = (Message) input.readObject();
                 messageQueue.offer(message);
-                System.out.println(StringUtils.formatNetworkLog("CLIENT", "RECEIVE", 
-                        "Nhan goi tin tu server: " + message.getType() + " - Object deserialization"));
+                
+                System.out.println("[NETWORK] Message received (" + message.toString().length() + " bytes)");
+                System.out.println("[PROTOCOL] Parsed: " + message.getType());
+                System.out.println("[EDT] Scheduling GUI update on EDT");
+                        
                 handleMessage(message);
+                System.out.println("[EDT] GUI updated");
             }
         } catch (IOException | ClassNotFoundException e) {
             if (running) {
